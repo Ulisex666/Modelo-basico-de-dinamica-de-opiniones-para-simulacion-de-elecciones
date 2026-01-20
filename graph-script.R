@@ -1,19 +1,18 @@
 library(rlang)
-library(ggplot2)
 library(tidyverse)
 setwd("C:/Users/ulise/Documents/GitHub/Modelo-base-dinamica-de-opinion")
-df <- read.csv("trial-table.csv", skip = 6)
+df <- read.csv("bc-experiments-table.csv", skip = 6)
 df_clean <- df %>%
   rename(
     tick = X.step.,
-    learning_rate = learning.rate, 
+    confidence_threshold = confidence.threshold, 
     pref_A = pref.A,
     pref_B = pref.B,
     run = X.run.number.
   )
 
 df_avg <- df_clean %>%
-  group_by(learning_rate, tick) %>%
+  group_by(confidence_threshold, tick) %>%
   summarise(
     mean_A = mean(pref_A),
     mean_B = mean(pref_B),
@@ -22,31 +21,33 @@ df_avg <- df_clean %>%
     .groups = "drop"
   )
 
-par(mfrow = c(2, 5), mar = c(4, 4, 2, 1)) 
+df_avg$pct_A <- (df_avg$mean_A / 441) * 100
+df_avg$pct_B <- (df_avg$mean_B / 441) * 100
 
-# 2. Obtener la lista de valores únicos de learning_rate
-l_rates <- sort(unique(df_avg$learning_rate))
 
-# 3. Crear un bucle para graficar cada caso
-for (rate in l_rates) {
-  
-  # Filtrar los datos para el learning_rate actual
-  subset_data <- df_avg[df_avg$learning_rate == rate, ]
-  
-  # Crear la base de la gráfica con la primera variable (pref_A)
-  plot(subset_data$tick, subset_data$mean_A, 
-       type = "l",           # "l" de líneas
-       col = "blue", 
-       ylim = c(-1, 1),       # Asumiendo que las preferencias van de 0 a 1
-       main = paste("LR:", rate), 
-       xlab = "Ticks", 
-       ylab = "Pref",
-       las = 1)              # Poner los números del eje Y horizontales
-  
-  # Añadir la segunda variable (pref_B) encima
-  lines(subset_data$tick, subset_data$mean_B, 
-        col = "red")
+plot(df_avg$tick, df_avg$mean_A, type = "n", 
+     ylim = c(0, 100), 
+     xlim = c(0, 50000),
+     xlab = "Ticks", 
+     ylab = "Porcentaje de agentes con preferencia A",
+     main = "Cambio de opinión bajo influencia acotada",
+     las = 1)
+
+# 2. Definir los valores de learning_rate y los colores
+c_tresholds <- sort(unique(df_avg$confidence_threshold))
+colores <- terrain.colors(length(c_tresholds))
+
+# 3. Dibujar una línea por cada learning_rate
+for (i in 1:length(c_tresholds)) {
+  datos_temp <- subset(df_avg, confidence_threshold == c_tresholds[i])
+  lines(datos_temp$tick, datos_temp$pct_A, col = colores[i], lwd = 2)
 }
 
-# 4. (Opcional) Volver a la configuración de una sola gráfica por pantalla
-par(mfrow = c(1, 1))
+for (i in 1:length(c_tresholds)) {
+  datos_temp <- subset(df_avg, confidence_threshold == c_tresholds[i])
+  lines(datos_temp$tick, datos_temp$pct_B, col = colores[i], lwd = 2)
+}
+# 4. Añadir una leyenda para saber qué color es cuál
+legend("right", legend = c_tresholds, col = colores, 
+       lwd = 2, title = "Cota de confianza", cex = 0.8, ncol = 2)
+
