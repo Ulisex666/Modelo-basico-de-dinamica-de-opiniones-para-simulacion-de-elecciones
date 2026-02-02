@@ -40,7 +40,31 @@ Experimentos con modelo básico de dinámica de opiniones
 	En este documento se describen los experimentos realizados sobre el modelo básico de dinámica de opiniones, juntos a los resultados obtenidos. El objetivo es lograr reproducir el cambio de opinión durante la elección presidencial en México llevada a cabo el 2 de junio de 2024. Para ello, se obtuvieron los resultados en la \href{https://prep2024.ine.mx/publicacion/nacional/presidencia/nacional/candidatura}{página web del PREP 2024}. La opinión pública e intención de voto se mide mediante las encuestas realizadas por el grupo GEA-ISA en tres cortes, disponibles en \href{https://repositoriodocumental.ine.mx/xmlui/handle/123456789/166950}{el repositorio del INE.}
 	
 \section{Materiales y métodos}
-	El protocolo ODD del modelo base se encuentra anexado al final del presente documento, adaptado para su uso en el caso de estudio. Para iniciar la experimentación con el caso más sencillo, se tomaron en cuenta únicamente a los dos candidatos principales en la elección estudiada. De esta forma, se ajustaron los porcentajes de las encuestas de opinión y los resultados de la elección. 
+	El protocolo ODD del modelo base se encuentra anexado al final del presente documento, adaptado para su uso en el caso de estudio. La elección real vio la competición entre tres candidatos principales a la presidencia, representados por dos alianzas políticas y un partido independiente. Los datos originales se muestran en la tabla \ref{tab:datos_crudos}, registrando la evolución de la intención de voto a nivel nacional tomando tres cortes de tiempo y también se toma en cuenta los resultados de la elección. El instrumento utilizado fue creado por el grupo GEA-ISA, y toma en cuenta a 1070 entrevistados a nivel nacional con una serie de preguntas sobre su intención de voto y datos demográficos.
+	
+\begin{figure}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|}
+		\hline
+		& Sep. 2023 & Nov. 2023 & Mar. 2024 & Elección Junio 2024 \\
+		\hline
+		Sheinbaum & 53\% & 52\% & 52\% & 59.4 \% \\
+		\hline
+		Xóchitl & 34\% & 30\% & 33\% & 27.9 \% \\
+		\hline
+		Candidatura MC & 7\% & 10\% & 4\% & 10.4\% \\
+		\hline
+		Otros & 6\% & 8\% & 12\% & 2.3\% \\
+		\hline
+	\end{tabular}
+	\label{tab:datos_crudos}
+	\caption{}
+\end{figure}
+	
+	
+	
+	Para iniciar la experimentación con el caso más sencillo, se tomaron en cuenta únicamente a los dos candidatos principales en la elección estudiada. De esta forma, se ajustaron los porcentajes de las encuestas de opinión y los resultados de la elección. 
+	 
 	
 	Después de este proceso de ajuste, se tienen los siguientes datos para medir el error \ref{tab:datos_reales}, tomando como punto de inicio la fecha de la primera encuesta y como final el día de la elección. El candidato A se corresponde a Claudia Sheinbaum en la elección estudiada, y el candidato B a Xóchitl Gálvez.
 	
@@ -50,8 +74,8 @@ Experimentos con modelo básico de dinámica de opiniones
 		\hline
 		\textbf{Fecha} & 
 		\textbf{Tiempo (días)} & 
-		\textbf{Preferencia por B (\%)} & 
-		\textbf{Preferencia por A (\%)} 
+		\textbf{Preferencia por A (\%)} & 
+		\textbf{Preferencia por B (\%)} 
 		\\
 		\hline
 		2023/09/16 &
@@ -62,19 +86,19 @@ Experimentos con modelo básico de dinámica de opiniones
 		\hline
 		2023/11/25 &
 		70  &
-		36  &
-		64
+		64  &
+		36
 		\\
 		\hline 
 		2024/03/01 &
 		167  &
-		39  &
-		61  \\
+		61 &
+		39 \\
 		\hline 
 		2024/06/02 &
 		260  &
-		32  &
-		68  \\
+		68 &
+		32 \\
 		\hline
 	\end{tabular}
 	\label{tab:datos_reales}
@@ -121,7 +145,7 @@ Mediante el uso de la herramienta \textit{Behaviorspace}, se realizaron variacio
 	\hline
 	\textit{influence-type} & \textit{positive}  \\
 	\hline
-	\textit{confidence-threshold} & 0.0 \\
+	\textit{confidence-threshold} & No aplica \\
 	\hline
 	percent-option-B & 39 \\
 	\hline
@@ -207,7 +231,7 @@ Para el segundo experimento, se analizó el efecto del parámetro \textit{agents
 		\hline
 		\textit{influence-type} & \textit{positive}  \\
 		\hline
-		\textit{confidence-threshold} & 0.0 \\
+		\textit{confidence-threshold} & No aplica \\
 		\hline
 		percent-option-B & 39 \\
 		\hline
@@ -285,63 +309,63 @@ Se observa un mejor ajuste del modelo comparado con los datos reales, obteniendo
 \clearpage
 
 \subsection{Modelo de influencia negativa}
-En la siguiente parte de la experimentación se evalúa el desempeño del modelo de influencia negativa. Como se sabe de la literatura, este tipo de dinámica de opiniones suele llevar a la polarización de la población, de forma que se tiene a los agentes divididos en dos grupos con opiniones diametralmente opuestas. Esto se contrasta con el caso de estudio, donde el candidato B perdió una gran cantidad de votantes entre la última encuesta disponible en la base de datos y el día de la elección. 
-
-\subsubsection{Experimento 3. Variación del parámetro \textit{confidence threshold}}
-De acuerdo a los resultados de los experimentos anteriores, se mantiene fijo el valor de los parámetros \textit{learning rate} y el número de agentes interactuando por tick. Para el modelo bajo este tipo de influencia se busca explorar el efecto del parámetro \textit{confidence threshold} sobre la distribución de opiniones. Mientras más bajo sea este valor, es más fácil disparar el efecto repulsivo en la interacción. Al exceder el valor de 1, este modelo se comporta de manera idéntica a la influencia positiva. Por lo tanto, este parámetro se hace variar de $0$ a $1$, con las características listadas en la tabla \ref{tab:exp3_setup}.
-
-\begin{figure}[h!]
-	\centering
-	\begin{tabular}{|c|c|}
-		\hline
-		\textbf{Parámetro} & \textbf{Valor} \\
-		\hline
-		\textit{learning-rate} & 0.53 \\
-		\hline
-		\textit{influence-type} & \textit{negative}  \\
-		\hline
-		\textit{confidence-threshold} & En $[0,1]$ con saltos de $0.01$. \\
-		\hline
-		percent-option-B & 39 \\
-		\hline
-		agents-updated-per-tick & 5 \\
-		\hline
-		spatial-interactions? & \textit{False} \\
-		\hline
-	\end{tabular}
-	\label{tab:exp3_setup}
-\end{figure}
-
-Se realizaron 30 repeticiones por cada valor del parámetro, y se tomo el promedio como referencia para calcular el error con respecto a los datos reales. Con base a ello se identifica el mejor valor para el parámetro y se analiza la viabilidad del uso de este tipo de influencia en este trabajo.
-
-\subsubsection{Resultados.}
-En la tabla \ref{tab:resultados_exp3} se listan los valores obtenidos con el mejor desempeño para este modelo, y la evolución del error se puede visualizar en la figura \ref{fig:exp3_error}.
-
-\begin{figure}[h!]
-	\centering
-	\begin{tabular}{|c|c|c|}
-		\hline
-		\textbf{Confidence treshold} 
-		&
-		\textbf{MSE} 
-		& 
-		\textbf{RMSE}  
-		\\
-		\hline
-		0.99	& 8.49 & 2.91 \\
-		\hline
-		0.94 & 9.01 & 3.00 \\
-		\hline
-		0.98 & 9.33 & 3.05 \\
-		\hline
-		0.95 & 9.66 & 3.11 \\
-		\hline
-		0.96 & 9.68 & 3.11\\ 
-		\hline
-	\end{tabular}
-	\label{tab:resultados_exp3}
-	\caption{Mejores resultados obtenidos al variar el parámetro de confianza.}
-\end{figure}
+%En la siguiente parte de la experimentación se evalúa el desempeño del modelo de influencia negativa. Como se sabe de la literatura, este tipo de dinámica de opiniones suele llevar a la polarización de la población, de forma que se tiene a los agentes divididos en dos grupos con opiniones diametralmente opuestas. Esto se contrasta con el caso de estudio, donde el candidato B perdió una gran cantidad de votantes entre la última encuesta disponible en la base de datos y el día de la elección. 
+%
+%\subsubsection{Experimento 3. Variación del parámetro \textit{confidence threshold}}
+%De acuerdo a los resultados de los experimentos anteriores, se mantiene fijo el valor de los parámetros \textit{learning rate} y el número de agentes interactuando por tick. Para el modelo bajo este tipo de influencia se busca explorar el efecto del parámetro \textit{confidence threshold} sobre la distribución de opiniones. Mientras más bajo sea este valor, es más fácil disparar el efecto repulsivo en la interacción. Al exceder el valor de 1, este modelo se comporta de manera idéntica a la influencia positiva. Por lo tanto, este parámetro se hace variar de $0$ a $1$, con las características listadas en la tabla \ref{tab:exp3_setup}.
+%
+%\begin{figure}[h!]
+%	\centering
+%	\begin{tabular}{|c|c|}
+%		\hline
+%		\textbf{Parámetro} & \textbf{Valor} \\
+%		\hline
+%		\textit{learning-rate} & 0.53 \\
+%		\hline
+%		\textit{influence-type} & \textit{negative}  \\
+%		\hline
+%		\textit{confidence-threshold} & En $[0,1]$ con saltos de $0.01$. \\
+%		\hline
+%		percent-option-B & 39 \\
+%		\hline
+%		agents-updated-per-tick & 5 \\
+%		\hline
+%		spatial-interactions? & \textit{False} \\
+%		\hline
+%	\end{tabular}
+%	\label{tab:exp3_setup}
+%\end{figure}
+%
+%Se realizaron 30 repeticiones por cada valor del parámetro, y se tomo el promedio como referencia para calcular el error con respecto a los datos reales. Con base a ello se identifica el mejor valor para el parámetro y se analiza la viabilidad del uso de este tipo de influencia en este trabajo.
+%
+%\subsubsection{Resultados.}
+%En la tabla \ref{tab:resultados_exp3} se listan los valores obtenidos con el mejor desempeño para este modelo, y la evolución del error se puede visualizar en la figura \ref{fig:exp3_error}.
+%
+%\begin{figure}[h!]
+%	\centering
+%	\begin{tabular}{|c|c|c|}
+%		\hline
+%		\textbf{Confidence treshold} 
+%		&
+%		\textbf{MSE} 
+%		& 
+%		\textbf{RMSE}  
+%		\\
+%		\hline
+%		0.99	& 8.49 & 2.91 \\
+%		\hline
+%		0.94 & 9.01 & 3.00 \\
+%		\hline
+%		0.98 & 9.33 & 3.05 \\
+%		\hline
+%		0.95 & 9.66 & 3.11 \\
+%		\hline
+%		0.96 & 9.68 & 3.11\\ 
+%		\hline
+%	\end{tabular}
+%	\label{tab:resultados_exp3}
+%	\caption{Mejores resultados obtenidos al variar el parámetro de confianza.}
+%\end{figure}
 
 \section*{Anexo. Protocolo ODD}\label{anexo}
 
