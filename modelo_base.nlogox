@@ -4,6 +4,7 @@
  ; influence-type
  ; percent-option-B
  ; agents-updated-per-tick 
+ ; spatial-interactions?
  pref-A
  pref-B
 ]
@@ -47,9 +48,12 @@ to go
   ;; dos agentes se eligen de manera aleatoria para interactuar
   ask n-of agents-updated-per-tick patches [
     let x1 opinion 
-    let other-patch one-of other patches
-    let x2 [opinion] of other-patch 
-
+    let other-patch one-of other patches 
+    
+    if spatial-interactions? 
+      [set other-patch one-of neighbors4] 
+    
+    let x2 [opinion] of other-patch
     ;; Influencia positiva. Todos se hacen más iguales
     if influence-type = "positive"
     [let x1-new (x1 + learning-rate * (x2 - x1))
@@ -96,6 +100,8 @@ to go
   update-preferences
   tick
   if ticks = 260 [
+    update-colors
+    update-preferences
     stop
   ] 
 end
@@ -115,16 +121,8 @@ to update-preferences
 end]]></code>
   <widgets>
     <view x="269" wrappingAllowedX="false" y="14" frameRate="30.0" minPycor="-5" height="54" showTickCounter="true" patchSize="5.0" fontSize="10" wrappingAllowedY="false" width="539" tickCounterLabel="ticks" maxPycor="4" updateMode="0" maxPxcor="53" minPxcor="-53"></view>
-    <slider x="69" step=".01" y="86" max="1" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.41" variable="learning-rate"></slider>
     <button x="52" y="31" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="66">setup</button>
     <button x="138" y="32" height="40" disableUntilTicks="true" forever="true" kind="Observer" width="92">go</button>
-    <chooser x="15" y="145" height="60" variable="influence-type" current="0" width="250" display="influence-type">
-      <choice type="string" value="positive"></choice>
-      <choice type="string" value="BC"></choice>
-      <choice type="string" value="negative"></choice>
-    </chooser>
-    <slider x="13" step="0.1" y="217" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.0" variable="confidence-threshold"></slider>
-    <slider x="9" step="1" y="287" max="100" width="250" display="percent-option-B" height="50" min="0" direction="Horizontal" default="39.0" variable="percent-option-B"></slider>
     <plot x="597" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="opinions" y="85" xMin="0.0" height="199" legend="false" xMax="260.0" yMin="-1.0" width="382" xAxis="time" display="Agent opinions over time">
       <setup></setup>
       <update></update>
@@ -164,25 +162,159 @@ set-histogram-num-bars 40
         <update>plot (pref-B / count patches) * 100</update>
       </pen>
     </plot>
-    <slider x="9" step="1" y="350" max="1070" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="6.0" variable="agents-updated-per-tick"></slider>
+    <chooser x="14" y="201" height="60" variable="influence-type" current="2" width="250" display="influence-type">
+      <choice type="string" value="positive"></choice>
+      <choice type="string" value="BC"></choice>
+      <choice type="string" value="negative"></choice>
+    </chooser>
+    <slider x="14" step="0.1" y="273" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.5" variable="confidence-threshold"></slider>
+    <slider x="14" step="1" y="343" max="100" width="250" display="percent-option-B" height="50" min="0" direction="Horizontal" default="39.0" variable="percent-option-B"></slider>
+    <slider x="14" step="1" y="406" max="1070" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="1.0" variable="agents-updated-per-tick"></slider>
+    <slider x="57" step=".01" y="140" max="1" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.3" variable="learning-rate"></slider>
+    <switch x="69" y="91" height="40" on="false" variable="spatial-interactions?" width="141" display="spatial-interactions?"></switch>
   </widgets>
-  <info><![CDATA[## Model Information and Materials
+  <info><![CDATA[# Propósito y patrones
 
-This model is original material created by Paul E. Smaldino. The model is based on work by Deffuant et al. (2000). 
+El propósito del modelo es la simulación de la elección presidencial mexicana llevada a cabo en el 2024, mediante el uso de dinámica de opiniones. En este contexto, *una opinión es la posición que se tiene sobre un tema, y se formaliza como un número que cambia entre dos extremos*. Se espera que las personas modifiquen sus opiniones después de interactuar con sus pares a través del efecto de la influencia social. Se consideran tres tipos de influencia diferentes entre los agentes durante de una interacción.
 
-* Deffuant, G., Neau, D., Amblard, F., & Weisbuch, G. (2000). Mixing beliefs among interacting agents. Advances in Complex Systems, 3, 87-98.
+- **Influencia positiva.** Después de una interacción, dos agentes siempre tendrán una opinión más cercana a la del otro. Esto toma como base teorías cognitivas que hacen hincapié en el papel del aprendizaje social y de la presión social para seguir las normas de un grupo.
 
-## References and Citation
+- **Confianza acotada.** Un agente es influenciado a tomar una opinión más cercana a la del otro agente en la interacción solamente si sus opiniones son suficientemente similares. Qué tan parecida debe ser la opinión de otro agente está determinado por una cota o límite de confianza. La base teórica principal es el sesgo de confirmación, la tendencia de preferir información que este de acuerdo con lo que ya se opina y evadir aquella que contradiga nuestras creencias.
 
-Basad en el modelo de influencia positiva de:
+- **Influencia negativa.** Si dos agentes con opiniones muy disimilares interactúan entre ellos, se influencian en sentido opuesto, tomando opiniones todavía más dispares. Esto toma como base teórica efectos como la xenofobia o el rechazo a grupos percibidos como externos, aunque la evidencia empírica de este efecto es mixta.
 
-* Smaldino PE (2023). Opinion Dynamics: Positive Influence. Modeling Social Behavior.  https://github.com/psmaldino/modsoc/
+La opinión es convertida a voto dependiendo de su valor, tomando como referencia los dos candidatos principales en la elección real. De esta forma, el principal patrón a evaluar es la evolución del voto durante todo el periodo de la simulación, con el objetivo de replicar la distribución de voto observada en la elección real. Se utiliza una serie de encuestas de opinión realizadas durante el periodo electoral como refencia.
 
-## Licence
+# Entidades, variables de estado y escalas
 
-![CC BY-NC-SA 4.0](http://ccl.northwestern.edu/images/creativecommons/byncsa.png)
+Las únicas entidades del modelo son las parcelas, indicando un votante dentro de las encuestas de opinión tomadas como referencia. Cada una se encuentra definida por una variable de estado: su opinión en un momento dado. Esta es un valor real en el rango *[-1,1]*, donde 1 indica una opinión completamente a favor del candidato A y -1 una opinión completamente a favor del candidato B. Cuando se activa el parámetro *local-interactions?* cada agente puede comunicarse únicamente con sus cuatro vecinos más cercanos, por lo que esto se vuelve otra característica que define su comportamiento.
 
-This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. http://creativecommons.org/licenses/by-nc-sa/4.0/]]></info>
+Se utiliza un mundo cerrado de tamaño *107x10*, con cada parcela representando un votante de la encuestas. De esta forma, se tiene 1070 agentes dentro del modelo. El alcance temporal del modelo se da en base al número de días desde la primera encuestas hasta el día de la elección, con un total de 260 días. Cada tick representa un día, con el modelo ejecutándose un total de 260 ticks.
+
+# Descripción general y *scheduling*
+
+El modelo realiza las siguientes acciones por cada paso de tiempo.
+
+**Selección de agentes iniciales**. Se selecciona a una cantidad de parcelas definida por el parámetro *agents-updated-per-tick* de manera aleatoria de entre todas las presentes en el modelo. 
+
+**Selección de agentes para interacción.** Cada uno de los *n* agentes iniciales selecciona a otro agente en el modelo para interactuar. Si se tiene activado el parámetro *spatial-interactions?*, cada agente inicial debe seleccionar a uno de sus vecinos. En caso contrario, selecciona un agente al azar de todos los presentes en el modelo, permitiendo repeticiones.
+
+**Interacción entre agentes.** Los agentes cambian su opinión de acuerdo al tipo de inlfuencia seleccionado en la simulación, detallados en la sección de submodelos. Si se cumplen las condiciones adecuadas, ambos agentes presentes en la simulación modifican el valor de su opinión.
+
+**Actualización de las preferencias**. Al terminar las interacciones entre los seleccionados, se actualizan las preferencias de voto del modelo de acuerdo al cambio de las opiniones.
+
+**Visualización.** El color de los agentes es modificado de acuerdo al valor de su opinión, y se actualizan las gráficas y visualizaciones en el modelo.
+
+**Terminación**. Al llegar al tick 260, el modelo actualiza las preferencias y las visualizaciones por una última vez, terminando su ejecución.
+
+
+# Conceptos de diseño
+
+- **Principios básicos.** La suposición básica en todo modelo de dinámica de opinión es que la influencia social tiene un papel fundamental a a la hora de formar y modificar opiniones. En este caso se esta consideran tres diferentes tipos de influencia al interactuar con otros agentes, cada una con diferentes justificaciones en ciencias sociales y psicología. Al activar las interacciones espaciales, se esta asumiendo que el efecto de la influencia social se da únicamente por aquellos considerados cercanos. 
+
+- **Emergencia.** Los patrones principales a buscar son la distribución de opiniones a escala global en el sistema y la distribución de la preferencia de votos emergente de esta. Estos patrones emergen de la interacción entre pares de los agentes del sistema y del tipo de influencia seleccionado.
+
+- **Adaptación.** Los agentes adaptan su opinión después de interactuar con otros agentes de acuerdo al tipo de influencia seleccionado en la simulación. Para una influencia positiva, el agente busca parecerse más a cualquier otra persona después de una interacción. En el caso de confianza acotada, busca solamente parecerse a aquellos similares a sí mismo. Para la influencia negativa, busca alejar su opinión de aquellas que sean muy disimilares.
+
+- **Objetivos.** Los tres modelos de influencia asumen que un agente busca ajustar su opinión de acuerdo a las interacciones con otros. Se difiere en qué agentes son considerados suficientemente importantes como para afectar la opinión, y el sentido en que se afecta esta opinión.
+
+- **Aprendizaje.** Este concepto no se utiliza en el modelo.
+
+- **Predicción.** Este concepto no se utiliza en el modelo.
+
+- **Percepciones.** En la interacción entre agentes, se asume que cada agente es completamente consciente de la opinión del otro.
+
+- **Interacciones.** La interacción a modelar es el compartir opinión entre pares y cómo estas opiniones son modificadas de acuerdo al tipo de influencia considerado. Las interacciones se dan de forma directa, donde la opinión de un agente afecta la del otro de acuerdo al tipo de interacción.
+
+- **Estocásticidad.** Las opiniones iniciales de cada agente se dan de forma aleatoria, siguiendo una distribución uniforme. Los agentes a interactuar en cada paso de tiempo se seleccionan de manera aleatoria.
+
+- **Colectivos.** Este concepto no se utiliza en el modelo.
+
+- **Observaciones.** Los agentes cambian su color de acuerdo a la opinión que tengan en ese momento, con valores entre -1 y 1. Aquellos con valores cercanos a -1 tomarán un color azul intenso, mientras que aquellos con valores cercanos a 1 tomarán colores rojos.También se tiene un histograma de las opiniones en todo el sistema, junto a una gráfica que muestra su evolución cada 10 pasos de tiempo. Para la visualización de las preferencias de voto se cuenta con dos gráficos, uno que indica el porcentaje de preferencia por A mientras que la segunda muestra las preferencias por B, siendo actualizadas cada paso de tiempo.
+
+# Inicialización
+
+El modelo se inicializa asignando las opiniones iniciales a los agentes de acuerdo al parámetro *percent-option-B*, indicando el porcentaje de agentes con preferencia por la opción B. Para la comparación con las encuestas de opinión utilizadas, este parámetro debe tomar el valor de 39. Las opiniones iniciales para los agentes con preferencia por A se generan con una distribución uniforme con valores entre *[0,1]*, mientras que las opiniones para agentes con preferencia por B toman valores de una distribución uniforme entre *[-1,0]*. 
+
+Posteriormente, se actualiza el color de los agentes de acuerdo a la opinión asignada, y se actualizan las preferencias de voto por la opción A y por la opción B.
+
+# Datos de entrada
+
+El modelo no necesita del uso de datos de entrada.
+
+# Submodelos
+
+## Influencia positiva
+ Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula 
+
+```
+let x1-new (x1 + learning-rate * (x2 - x1))
+    let x2-new (x2 + learning-rate * (x1 - x2))
+    set opinion x1-new
+      ask other-patch [ set opinion x2-new] 
+```
+
+donde el parámetro *learning-rate* indica que tan rápido cambia la opinión de un     agente después de una interacción.
+
+## Confianza acotada
+Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula 
+
+```
+if (abs (x1 - x2) < confidence-threshold) [ 
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+```
+  El nuevo parámetro a considerar es *confidence-threshold*, indicando la tolerancia que tiene cada agente para opiniones disimilares. El parámetro *learning-rate* actúa de la misma forma que en el modelo de influencia positiva. De esta manera, un agente ajusta su opinión solamente si interactua con otro agente con una opinión lo suficientemente cercana a la que ya posee. En caso contrario, la opinión de ambos agentes en la interacción se mantiene igual.
+
+## Influencia negativa
+Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
+
+```
+if (abs (x1 - x2) < confidence-threshold) [ 
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+      ]
+      if (abs (x1 - x2) > confidence-threshold)[ 
+        ifelse (x1 > x2)
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 + x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 + x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 - x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+      ]
+```
+
+En este caso la interacción se ve dominada por el parámetro *confidence-threshold*. Si la diferencia de las opiniones es menor al valor de *confidence-threshold*, entonces ambos ajustan su opinión para ser más cercanas de acuerdo al valor del *learning-rate*. Sin embargo, si la diferencia entre opiniones es mayor a el valor de *confidence-threshold*, entonces ambos agentes alejan sus opiniones de acuerdo al valor del parámetro *learning-rate*.
+
+
+## Conversión de opinión a preferencia de voto
+Para convertir la opinión a preferencia de voto, se toma una opinión mayor a cero como la preferencia por el candidato A, y una opinión negativa como preferencia por el candidato B. De esta forma, para actualizar las preferencias globales de los agentes presentes en el modelo se tiene la siguiente fórmula.
+
+```
+  set pref-A (count patches with [opinion > 0] )
+  set pref-B (count patches with [opinion < 0] )
+``` 
+
+El total de agentes con opinión mayor a cero se cuenta como el total de la población con la intención de votar por la opción A, mientra que el total de agentes con opinión menor a cero se cuenta como el número de agentes con la intención de votar por la opción B.
+
+
+## Referencias
+
+Trabajo basado en los modelos de influencia positivam, negativa y acotada encontrados en:
+
+* Paul Smaldino. (2024). psmaldino/modsoc: Modeling Social Behavior (v1.0). Zenodo. https://doi.org/10.5281/zenodo.11245354
+]]></info>
   <turtleShapes>
     <shape name="default" rotatable="true" editableColorIndex="0">
       <polygon color="-1920102913" filled="true" marked="true">
@@ -1021,6 +1153,7 @@ This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAl
     <experiment name="experimento-1-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
       <setup>setup</setup>
       <go>go</go>
+      <runMetricsCondition>ticks = 1</runMetricsCondition>
       <metrics>
         <metric>pref-A</metric>
         <metric>pref-B</metric>
@@ -1041,5 +1174,83 @@ This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAl
         </enumeratedValueSet>
       </constants>
     </experiment>
+    <experiment name="experimento-2-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.53"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="2" step="1" last="1070"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-2-positiva-5-agents" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.53"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-3-positiva" repetitions="10" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.1" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="10" last="1070"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
   </experiments>
+  <systemDynamics dt="1.0">
+    <stock name="" allowNegative="true" x="339" y="75"></stock>
+    <converter name="" x="458" y="159"></converter>
+  </systemDynamics>
 </model>

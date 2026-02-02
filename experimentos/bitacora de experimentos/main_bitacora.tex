@@ -1,7 +1,9 @@
  \documentclass[11pt, letterpaper]{article}
-
+\usepackage[legalpaper, margin=3 cm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\spanishdecimal{.}
 %\usepackage{lmodern}
 \usepackage{graphicx}
 %\usepackage{wrapfig}
@@ -34,13 +36,314 @@ Experimentos con modelo básico de dinámica de opiniones
 \begin{document}
 	\maketitle
 	
-\section{Introducción}
-En este documento se describen los experimentos realizados sobre el modelo básico de dinámica de opiniones, juntos a los resultados obtenidos. El objetivo es lograr reproducir el cambio de opinión durante la elección presidencial en México llevada a cabo el 2 de junio de 2024. Para ello, se obtuvieron los resultados en la \href{https://prep2024.ine.mx/publicacion/nacional/presidencia/nacional/candidatura}{página web del PREP 2024}.
+\section{Objetivo}
+	En este documento se describen los experimentos realizados sobre el modelo básico de dinámica de opiniones, juntos a los resultados obtenidos. El objetivo es lograr reproducir el cambio de opinión durante la elección presidencial en México llevada a cabo el 2 de junio de 2024. Para ello, se obtuvieron los resultados en la \href{https://prep2024.ine.mx/publicacion/nacional/presidencia/nacional/candidatura}{página web del PREP 2024}. La opinión pública e intención de voto se mide mediante las encuestas realizadas por el grupo GEA-ISA en tres cortes, disponibles en \href{https://repositoriodocumental.ine.mx/xmlui/handle/123456789/166950}{el repositorio del INE.}
 	
+\section{Materiales y métodos}
+	El protocolo ODD del modelo base se encuentra anexado al final del presente documento, adaptado para su uso en el caso de estudio. Para iniciar la experimentación con el caso más sencillo, se tomaron en cuenta únicamente a los dos candidatos principales en la elección estudiada. De esta forma, se ajustaron los porcentajes de las encuestas de opinión y los resultados de la elección. 
 	
-\section{Primer experimento}
+	Después de este proceso de ajuste, se tienen los siguientes datos para medir el error \ref{tab:datos_reales}, tomando como punto de inicio la fecha de la primera encuesta y como final el día de la elección. El candidato A se corresponde a Claudia Sheinbaum en la elección estudiada, y el candidato B a Xóchitl Gálvez.
+	
+\begin{figure}[h]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Fecha} & 
+		\textbf{Tiempo (días)} & 
+		\textbf{Preferencia por B (\%)} & 
+		\textbf{Preferencia por A (\%)} 
+		\\
+		\hline
+		2023/09/16 &
+		0  &
+		39  & 
+		61
+		\\ 
+		\hline
+		2023/11/25 &
+		70  &
+		36  &
+		64
+		\\
+		\hline 
+		2024/03/01 &
+		167  &
+		39  &
+		61  \\
+		\hline 
+		2024/06/02 &
+		260  &
+		32  &
+		68  \\
+		\hline
+	\end{tabular}
+	\label{tab:datos_reales}
+	\caption{Datos ajustados a solamente dos opciones en la elección estudiada.}
+\end{figure}
+	
+	Los modelos se comparan en base a qué tanto se aproximan a los porcentajes de preferencia en los días considerados, además de qué tanto logran aproximar los resultados finales de la elección. Esto se evalúa mediante el uso del error cuadrático medio (MSE) y la raíz de este (RMSE) sobre los 3 puntos a considerar con respecto al porcentaje de votos obtenido por cada partido, dado que todas las corridas del modelo inician con los porcentajes dados por las encuestas en el día 0. Para ello se utilizan las fórmulas siguientes.
+	
+	\begin{equation*}
+		\begin{split}
+			MSE &= \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2| 
+			\\
+			RMSE &= \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+		\end{split}
+	\end{equation*}	
+	
+	Para su uso en este trabajo, se adaptó de la manera siguiente
+	\begin{equation*}
+		RMSE = \sqrt{\frac{1}{|T|} \sum_{t \in T} \frac{1}{2} \sum_{p \in \{A, B\}} (P_{t,p} - \hat{P}_{t,p})^2}
+	\end{equation*}
+	donde:
+	\begin{itemize}
+		\item $T$ indica el total de días con datos reales, tres en este caso.
+		\item $P_{t,p}$ es el porcentaje de preferencia real para el partido $p$ en el tiempo $t$.
+		\item $\hat{P}_{t,p}$ es el porcentaje de preferencia obtenido por la simulación para el partido $p$ en el tiempo $t$.
+	\end{itemize}
+	
+	Así, el error se mide para ambos partidos por cada uno de los tres días considerados. 
+\section{Experimentación}
+\subsection{Modelo de influencia positiva}
+
+\subsubsection{Experimento 1. Variación del parámetro \textit{learning rate}}
+En el primer experimento se toma el modelo de influencia positiva, evaluando cómo la variación del parámetro \textit{learning rate} afecta la evolución de la opinión en el tiempo, y si existen valores específicos para este parámetro capaces de reproducir el cambio de opinión observados en el caso de estudio. Bajo este tipo de influencia, el único otro parámetro que afecta el resultado del modelo es el número de agentes interactuando por tick (\textit{agents-updated-per-tick}). En este caso, se le dio un valor de uno.
+
+Mediante el uso de la herramienta \textit{Behaviorspace}, se realizaron variaciones del parámetro desde el valor 0.01 hasta 1, con pasos de 0.01. Cada uno de estos modelos fue repetido 30 veces para obtener validez estadística, y el resto de los parámetros se mantuvieron fijos, con los valores mostrados en . Las variables de interés son \textit{pref-A} y \textit{pref-B} en cada tick. La configuración para este experimento se puede observar en \ref{tab:experimento1_setup}.
+
+\begin{figure}[h!]
+	\centering
+\begin{tabular}{|c|c|}
+	\hline
+	\textbf{Parámetro} & \textbf{Valor} \\
+	\hline
+	\textit{learning-rate} & Entre $[0,1]$ con saltos de $0.01$. \\
+	\hline
+	\textit{influence-type} & \textit{positive}  \\
+	\hline
+	\textit{confidence-threshold} & 0.0 \\
+	\hline
+	percent-option-B & 39 \\
+	\hline
+	agents-updated-per-tick & 1 \\
+	\hline
+	spatial-interactions? & \textit{False} \\
+	\hline
+\end{tabular}
+	\label{tab:experimento1_setup}
+\end{figure}
 
 
-\section{Anexo. Protocolo ODD}\label{anexo}
+Para cada uno de los 100 valores dados al parámetro \textit{learning rate}, se tomó el promedio de las 30 repeticiones para obtener los valores de \textit{pref-A} y \textit{pref-B} en cada tick de la simulación. Estos fueron los valores utilizados para medir el error con respecto a los datos reales de la elección, siendo visualizados en la figura \ref{fig:exp1_lr_vs_rmse}.
 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/exp1_lr_vs_rmse}
+	\caption{Error del modelo con respecto a los datos reales de acuerdo al valor dado a el parámetro learning rate.}
+	\label{fig:exp1_lr_vs_rmse}
+\end{figure}
+
+\subsubsection{Resultados}
+De acuerdo a los resultados obtenidos, se observa que el error se minimiza con el parámetro $\textit{learning rate} = 0.53$, con los mejores valores para este parámetro listados en \ref{tab:exp1_resultados}. En las figuras \ref{fig:exp1_prefA}, \ref{fig:exp1_prefB} se observa la evolución de las opiniones obtenidas mediante este modelo, comparadas con los datos reales obtenidos de las encuestas. 
+
+\begin{figure}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{learning rate} 
+		&
+		\textbf{MSE} 
+		& 
+		\textbf{RMSE}  
+		\\
+		\hline
+		0.53	& 16.8 & 4.10 \\
+		\hline
+		0.39 & 16.8 & 4.10 \\
+		\hline
+		0.65 & 16.9 & 4.11 \\
+		\hline
+		0.42 & 17.1 & 4.13 \\
+		\hline
+		0.46 & 17.3 & 4.16 \\ 
+		\hline
+	\end{tabular}
+	\label{tab:exp1_resultados}
+	\caption{Mejores resultados obtenidos al variar el número de agentes interactuando por tick.}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/exp1_bestfit_prefA}
+	\caption{Evolución de preferencias por la opción A con learning rate = 0.53. Los diamantes indican las preferencias reales reportadas por las encuestas y los resultados de la elección.}
+	\label{fig:exp1_prefA}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/exp1_bestfit_prefB}
+	\caption{Evolución de preferencias por la opción B con learning rate = 0.53. Los diamantes indican las preferencias reales reportadas por las encuestas y los resultados de la elección.}
+	\label{fig:exp1_prefB}
+\end{figure}
+
+Se observa una alta variabilidad en el error del modelo, con una tendencia a la baja alrededor del valor de $0.5$ para el parámetro evaluado. Sumado a ello, cada una de las simulaciones con un valor fijo tiene una alta variabilidad en los resultados obtenidos, con márgenes de error muy amplios. P
+
+Para el parámetro obtenido con el menor error posible, no logra acercarse al porcentaje de votos obtenido en la elección ni al cambio de opinión registrado en la segunda encuesta. Sin embargo, se observa que logra mantenerse cerca de los resultados de la tercera encuesta de opinión.
+
+A continuación, se realiza un segundo experimento evaluando el efecto del parámetro \textit{agents-updated-per-tick} en el desempeño del modelo.
+
+\cleardoublepage
+\subsubsection{Experimento 2. Variación del parámetro \textit{agents-updated-per-tick}.}
+
+Para el segundo experimento, se analizó el efecto del parámetro \textit{agents-updated-per-tick} en el cambio de opinión. En el modelo, esto representa el número de personas que cambian su opinión por día, con un mínimo de 1 y máximo de 1070. Utilizando \textit{Behaviorspace}, se evaluó este parámetros para valores en el rango $[2, 1070]$, con saltos de uno y 30 repeticiones por cada valor. El parámetro \textit{learning rate} se mantuvo fijo en $0.53$, dado que este obtuvo el mejor resultado en el experimento anterior. La configuración se muestra en \ref{tab:experimento2_setup}. 
+
+\begin{figure}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & $0.53$ \\
+		\hline
+		\textit{influence-type} & \textit{positive}  \\
+		\hline
+		\textit{confidence-threshold} & 0.0 \\
+		\hline
+		percent-option-B & 39 \\
+		\hline
+		agents-updated-per-tick & Entre $[2, 1070]$ con saltos de 1. \\
+		\hline
+		spatial-interactions? & \textit{False} \\
+		\hline
+	\end{tabular}
+	\label{tab:experimento2_setup}
+\end{figure}
+
+En las figuras \ref{fig:exp2_error_1070}, \ref{fig:exp2_error_10} se muestran los errores obtenidos para los 1070 valores y para los primeros 10, respectivamente. Se observa que el mejor valor para el parámetro se obtuvo cuando este es igual a 5.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/exp2_error_1070}
+	\caption{Error obtenido al variar el número de interacciones por día. Se observa un aumento muy rápido del error conforme aumenta el número, con una ligera caída alrededor del valor de 5.}
+	\label{fig:exp2_error_1070}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/exp2_error_10}
+	\caption{Acercamiento al error para los primeros 10 valores tomados por el parámetro. El valor mínimo se obtiene con 5 interacciones por día.}
+	\label{fig:exp2_error_10}
+\end{figure}
+
+\subsubsection{Resultados}
+Para el parámetro evaluado, se obtuvieron los mejores resultados con los valores indicados en la tabla \ref{tab:resultados_exp2}
+
+\begin{figure}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+	\textbf{Agentes por tick} 
+	&
+	\textbf{MSE} 
+	 & 
+	\textbf{RMSE}  
+	\\
+	\hline
+		5	& 4.64 & 2.15 \\
+		\hline
+		6 & 6.34 & 2.54 \\
+		\hline
+		4 & 6.46 & 2.54 \\
+		\hline
+		3 & 9.01 & 3.00 \\
+		\hline
+		7 & 11.5 & 3.39\\ 
+		\hline
+	\end{tabular}
+	\label{tab:resultados_exp2}
+	\caption{Mejores resultados obtenidos al variar el número de agentes interactuando por tick.}
+\end{figure}
+
+En las figuras \ref{fig:exp2_pref_A}, \ref{fig:exp2_pref_B} se observa el cambio de opiniones obtenidos por el modelo al tomar el mejor valor para el parámetro \textit{learning rate} del experimento anterior junto a 5 agentes interactuando por día. 
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/exp2_pref_A}
+	\caption{Evolución de prefencias por A en el modelo básico de influencia positiva con 5 agentes interactuando por día.}
+	\label{fig:exp2_pref_A}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/exp2_pref_B}
+	\caption{Evolución de prefencias por B en el modelo básico de influencia positiva con 5 agentes interactuando por día.}
+	\label{fig:exp2_pref_B}
+\end{figure}
+
+Se observa un mejor ajuste del modelo comparado con los datos reales, obteniendo un mayor acercamiento a los resultados finales de la elección y a los puntos considerados en las encuestas de opinión. Sin embargo, se sigue observando una alta variabilidad del modelo, con un margen muy amplio que aumenta con cada día.
+ 
+\clearpage
+
+\subsection{Modelo de influencia negativa}
+En la siguiente parte de la experimentación se evalúa el desempeño del modelo de influencia negativa. Como se sabe de la literatura, este tipo de dinámica de opiniones suele llevar a la polarización de la población, de forma que se tiene a los agentes divididos en dos grupos con opiniones diametralmente opuestas. Esto se contrasta con el caso de estudio, donde el candidato B perdió una gran cantidad de votantes entre la última encuesta disponible en la base de datos y el día de la elección. 
+
+\subsubsection{Experimento 3. Variación del parámetro \textit{confidence threshold}}
+De acuerdo a los resultados de los experimentos anteriores, se mantiene fijo el valor de los parámetros \textit{learning rate} y el número de agentes interactuando por tick. Para el modelo bajo este tipo de influencia se busca explorar el efecto del parámetro \textit{confidence threshold} sobre la distribución de opiniones. Mientras más bajo sea este valor, es más fácil disparar el efecto repulsivo en la interacción. Al exceder el valor de 1, este modelo se comporta de manera idéntica a la influencia positiva. Por lo tanto, este parámetro se hace variar de $0$ a $1$, con las características listadas en la tabla \ref{tab:exp3_setup}.
+
+\begin{figure}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & 0.53 \\
+		\hline
+		\textit{influence-type} & \textit{negative}  \\
+		\hline
+		\textit{confidence-threshold} & En $[0,1]$ con saltos de $0.01$. \\
+		\hline
+		percent-option-B & 39 \\
+		\hline
+		agents-updated-per-tick & 5 \\
+		\hline
+		spatial-interactions? & \textit{False} \\
+		\hline
+	\end{tabular}
+	\label{tab:exp3_setup}
+\end{figure}
+
+Se realizaron 30 repeticiones por cada valor del parámetro, y se tomo el promedio como referencia para calcular el error con respecto a los datos reales. Con base a ello se identifica el mejor valor para el parámetro y se analiza la viabilidad del uso de este tipo de influencia en este trabajo.
+
+\subsubsection{Resultados.}
+En la tabla \ref{tab:resultados_exp3} se listan los valores obtenidos con el mejor desempeño para este modelo, y la evolución del error se puede visualizar en la figura \ref{fig:exp3_error}.
+
+\begin{figure}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{Confidence treshold} 
+		&
+		\textbf{MSE} 
+		& 
+		\textbf{RMSE}  
+		\\
+		\hline
+		0.99	& 8.49 & 2.91 \\
+		\hline
+		0.94 & 9.01 & 3.00 \\
+		\hline
+		0.98 & 9.33 & 3.05 \\
+		\hline
+		0.95 & 9.66 & 3.11 \\
+		\hline
+		0.96 & 9.68 & 3.11\\ 
+		\hline
+	\end{tabular}
+	\label{tab:resultados_exp3}
+	\caption{Mejores resultados obtenidos al variar el parámetro de confianza.}
+\end{figure}
+
+\section*{Anexo. Protocolo ODD}\label{anexo}
+
+\bibliography{bibliografia.bib}
 \end{document}
