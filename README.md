@@ -1,222 +1,144 @@
 # Protocolo ODD para modelo base de dinámica de opiniones
 A continuación se encuentra la descripción del modelo base de dinámica de opiniones, siguiendo el protocolo ODD.
 
-## Propósito y patrones
-El propósito del modelo es el estudio de la evolución de las opiniones en una sociedad, a través de la comunicación entre las personas presentes en ella y el tipo de influencia entre estas. En este contexto, una opinión es la posición que se tiene sobre un tema, y se formaliza como un número que cambia entre dos extremos \cite[p. 117]{smaldinoModelingSocialBehavior2023}. Se espera que las personas modifiquen sus opiniones después de interactuar con sus pares a través del efecto de la influencia social. Estas interacciones se dan solamente entre agentes que se encuentren comunicados mediante una conexión social. Se consideran tres tipos de influencia diferentes entre los agentes después de una interacción, tomando la clasificación dada en \cite{flacheModelsSocialInfluence2017b}.
-    - *Influencia positiva.* Después de una interacción, dos agentes siempre tendrán una opinión más cercana a la del otro. Esto toma como base teorías cognitivas que hacen hincapié en el papel del aprendizaje social y de la presión social para seguir las normas de un grupo.
+# Propósito y patrones
 
-    - *Confianza acotada.* Un agente es influenciado a tomar una opinión más cercana a la del otro agente en la interacción solamente si sus opiniones son suficientemente similares. Qué tan parecida debe ser la opinión de otro agente está determinado por una cota o límite de confianza. La base teórica principal es el  sesgo de confirmación, la tendencia de preferir información que este de acuerdo con lo que ya se opina y evadir aquella que contradiga nuestras creencias. 
+El propósito del modelo es la simulación de la elección presidencial mexicana llevada a cabo en el 2024, mediante el uso de dinámica de opiniones. En este contexto, *una opinión es la posición que se tiene sobre un tema, y se formaliza como un número que cambia entre dos extremos*. Se espera que las personas modifiquen sus opiniones después de interactuar con sus pares a través del efecto de la influencia social. Se consideran tres tipos de influencia diferentes entre los agentes durante de una interacción.
 
-    - *Influencia negativa.* Si dos agentes con opiniones muy disimilares interactúan entre ellos, se influencian en sentido opuesto, tomando opiniones todavía más dispares. Esto toma como base teórica efectos como la xenofobia o el rechazo a grupos percibidos como externos, aunque la evidencia empírica de este efecto es mixta.
+- **Influencia positiva.** Después de una interacción, dos agentes siempre tendrán una opinión más cercana a la del otro. Esto toma como base teorías cognitivas que hacen hincapié en el papel del aprendizaje social y de la presión social para seguir las normas de un grupo.
+
+- **Confianza acotada.** Un agente es influenciado a tomar una opinión más cercana a la del otro agente en la interacción solamente si sus opiniones son suficientemente similares. Qué tan parecida debe ser la opinión de otro agente está determinado por una cota o límite de confianza. La base teórica principal es el sesgo de confirmación, la tendencia de preferir información que este de acuerdo con lo que ya se opina y evadir aquella que contradiga nuestras creencias.
+
+- **Influencia negativa.** Si dos agentes con opiniones muy disimilares interactúan entre ellos, se influencian en sentido opuesto, tomando opiniones todavía más dispares. Esto toma como base teórica efectos como la xenofobia o el rechazo a grupos percibidos como externos, aunque la evidencia empírica de este efecto es mixta.
+
+La opinión es convertida a voto dependiendo de su valor, tomando como referencia los dos candidatos principales en la elección real. De esta forma, el principal patrón a evaluar es la evolución del voto durante todo el periodo de la simulación, con el objetivo de replicar la distribución de voto observada en la elección real. Se utiliza una serie de encuestas de opinión realizadas durante el periodo electoral como refencia.
+
+# Entidades, variables de estado y escalas
+
+Las únicas entidades del modelo son las parcelas, indicando un votante dentro de las encuestas de opinión tomadas como referencia. Cada una se encuentra definida por una variable de estado: su opinión en un momento dado. Esta es un valor real en el rango *[-1,1]*, donde 1 indica una opinión completamente a favor del candidato A y -1 una opinión completamente a favor del candidato B. Cuando se activa el parámetro *local-interactions?* cada agente puede comunicarse únicamente con sus cuatro vecinos más cercanos, por lo que esto se vuelve otra característica que define su comportamiento.
+
+Se utiliza un mundo cerrado de tamaño *107x10*, con cada parcela representando un votante de la encuestas. De esta forma, se tiene 1070 agentes dentro del modelo. El alcance temporal del modelo se da en base al número de días desde la primera encuestas hasta el día de la elección, con un total de 260 días. Cada tick representa un día, con el modelo ejecutándose un total de 260 ticks.
+
+# Descripción general y *scheduling*
+
+El modelo realiza las siguientes acciones por cada paso de tiempo.
+
+**Selección de agentes iniciales**. Se selecciona a una cantidad de parcelas definida por el parámetro *agents-updated-per-tick* de manera aleatoria de entre todas las presentes en el modelo. 
+
+**Selección de agentes para interacción.** Cada uno de los *n* agentes iniciales selecciona a otro agente en el modelo para interactuar. Si se tiene activado el parámetro *spatial-interactions?*, cada agente inicial debe seleccionar a uno de sus vecinos. En caso contrario, selecciona un agente al azar de todos los presentes en el modelo, permitiendo repeticiones.
+
+**Interacción entre agentes.** Los agentes cambian su opinión de acuerdo al tipo de inlfuencia seleccionado en la simulación, detallados en la sección de submodelos. Si se cumplen las condiciones adecuadas, ambos agentes presentes en la simulación modifican el valor de su opinión.
+
+**Actualización de las preferencias**. Al terminar las interacciones entre los seleccionados, se actualizan las preferencias de voto del modelo de acuerdo al cambio de las opiniones.
+
+**Visualización.** El color de los agentes es modificado de acuerdo al valor de su opinión, y se actualizan las gráficas y visualizaciones en el modelo.
+
+**Terminación**. Al llegar al tick 260, el modelo actualiza las preferencias y las visualizaciones por una última vez, terminando su ejecución.
 
 
-Los patrones a observar son aquellos clásicos de la literatura de dinámica de opiniones: consenso, polarización y agrupación de opiniones \citep{xiaOpinionDynamicsMultidisciplinary2011a}. El consenso se da cuando la opinión de todos los agentes en el sistema convergen alrededor de un mismo valor, con variabilidad mínima. En el otro extremo, se tiene a la polarización, donde la población se divide en dos grupos con opiniones completamente en contra. Entre estos dos extremos se encuentra la agrupación de opiniones, donde los agentes del sistema se concentran en diversos grupos sobre todo el espectro de opiniones. Se asume que los patrones observados en el modelo se deba principalmente a las diferentes formas de interacción entre agentes \citep{flacheModelsSocialInfluence2017b}.
+# Conceptos de diseño
 
-## Propósito y patrones
-El propósito del modelo es el estudio de la evolución de las opiniones en una sociedad, a través de la comunicación entre las personas presentes en ella y el tipo de influencia entre estas. En este contexto, \emph{una opinión es la posición que se tiene sobre un tema, y se formaliza como un número que cambia entre dos extremos} \cite[p. 117]{smaldinoModelingSocialBehavior2023}. Se espera que las personas modifiquen sus opiniones después de interactuar con sus pares a través del efecto de la influencia social. Estas interacciones se dan solamente entre agentes que se encuentren comunicados mediante una conexión social. Se consideran tres tipos de influencia diferentes entre los agentes después de una interacción, tomando la clasificación dada en \cite{flacheModelsSocialInfluence2017b}.
-    \item \textbf{Influencia positiva.} Después de una interacción, dos agentes siempre tendrán una opinión más cercana a la del otro. Esto toma como base teorías cognitivas que hacen hincapié en el papel del aprendizaje social y de la presión social para seguir las normas de un grupo.
+- **Principios básicos.** La suposición básica en todo modelo de dinámica de opinión es que la influencia social tiene un papel fundamental a a la hora de formar y modificar opiniones. En este caso se esta consideran tres diferentes tipos de influencia al interactuar con otros agentes, cada una con diferentes justificaciones en ciencias sociales y psicología. Al activar las interacciones espaciales, se esta asumiendo que el efecto de la influencia social se da únicamente por aquellos considerados cercanos. 
 
-    \item \textbf{Confianza acotada.} Un agente es influenciado a tomar una opinión más cercana a la del otro agente en la interacción solamente si sus opiniones son suficientemente similares. Qué tan parecida debe ser la opinión de otro agente está determinado por una cota o límite de confianza. La base teórica principal es el  sesgo de confirmación, la tendencia de preferir información que este de acuerdo con lo que ya se opina y evadir aquella que contradiga nuestras creencias. 
+- **Emergencia.** Los patrones principales a buscar son la distribución de opiniones a escala global en el sistema y la distribución de la preferencia de votos emergente de esta. Estos patrones emergen de la interacción entre pares de los agentes del sistema y del tipo de influencia seleccionado.
 
-    \item \textbf{Influencia negativa.} Si dos agentes con opiniones muy disimilares interactúan entre ellos, se influencian en sentido opuesto, tomando opiniones todavía más dispares. Esto toma como base teórica efectos como la xenofobia o el rechazo a grupos percibidos como externos, aunque la evidencia empírica de este efecto es mixta.
-\end{itemize}
+- **Adaptación.** Los agentes adaptan su opinión después de interactuar con otros agentes de acuerdo al tipo de influencia seleccionado en la simulación. Para una influencia positiva, el agente busca parecerse más a cualquier otra persona después de una interacción. En el caso de confianza acotada, busca solamente parecerse a aquellos similares a sí mismo. Para la influencia negativa, busca alejar su opinión de aquellas que sean muy disimilares.
 
-Los patrones a observar son aquellos clásicos de la literatura de dinámica de opiniones: consenso, polarización y agrupación de opiniones \citep{xiaOpinionDynamicsMultidisciplinary2011a}. El consenso se da cuando la opinión de todos los agentes en el sistema convergen alrededor de un mismo valor, con variabilidad mínima. En el otro extremo, se tiene a la polarización, donde la población se divide en dos grupos con opiniones completamente en contra. Entre estos dos extremos se encuentra la agrupación de opiniones, donde los agentes del sistema se concentran en diversos grupos sobre todo el espectro de opiniones. Se asume que los patrones observados en el modelo se deba principalmente a las diferentes formas de interacción entre agentes \citep{flacheModelsSocialInfluence2017b}.
+- **Objetivos.** Los tres modelos de influencia asumen que un agente busca ajustar su opinión de acuerdo a las interacciones con otros. Se difiere en qué agentes son considerados suficientemente importantes como para afectar la opinión, y el sentido en que se afecta esta opinión.
 
-\subsubsection{Entidades, variables de estado y escalas}
-Las entidades principales del modelo propuesto son los agentes, representando personas dentro de una sociedad, interactuando con aquellas personas con las que mantienen una conexión social. 
+- **Aprendizaje.** Este concepto no se utiliza en el modelo.
 
-Cada agente se encuentra definido por una variable de estado: su opinión en un momento dado. Esta es un valor real en el rango $[-1,1]$, donde $-1$ indica una opinión completamente en contra y $1$ una opinión completamente a favor. Además de esto, es importante considerar los vecinos de un agente, que indican aquellos con los que se puede comunicar.
+- **Predicción.** Este concepto no se utiliza en el modelo.
 
-Se utiliza un mundo cerrado de tamaño 21x21, generando un agente por segmento. De esta forma, se tiene 441 agentes dentro del modelo. El tiempo se encuentra representado por ticks, sin un valor específico más allá del tiempo que se necesita para la interacción entre dos agentes. El modelo se ejecuta el número de ticks necesario hasta que se llegue a observar patrones emergentes a escala global. 
+- **Percepciones.** En la interacción entre agentes, se asume que cada agente es completamente consciente de la opinión del otro.
 
-\subsubsection{Descripción general y \textit{scheduling}}
-El programa tiene dos acciones principales por tick: la interacción entre agentes y la actualización de las observaciones del modelo.
+- **Interacciones.** La interacción a modelar es el compartir opinión entre pares y cómo estas opiniones son modificadas de acuerdo al tipo de influencia considerado. Las interacciones se dan de forma directa, donde la opinión de un agente afecta la del otro de acuerdo al tipo de interacción.
 
-Para la interacción entre agentes, se selecciona a uno de manera aleatoria. Después de esto, se mira a los vecinos de este agente, y de manera aleatoria se selecciona a uno de ellos para compartir su opinión. Los dos agentes comparten su opinión de acuerdo al tipo de influencia que se este modelando siguiendo los submodelos detallados más adelante en el protocolo.
+- **Estocásticidad.** Las opiniones iniciales de cada agente se dan de forma aleatoria, siguiendo una distribución uniforme. Los agentes a interactuar en cada paso de tiempo se seleccionan de manera aleatoria.
 
-El siguiente paso es la actualización de las observaciones del modelo, de forma que el cambio en las opiniones de los agentes se pueda analizar y visualizar. Igualmente esto se encuentra detallado en la sección de submodelos. En el algoritmo \ref{alg:opinion_dynamics_cycle} se encuentra la descripción de este proceso mediante pseudocódigo.
+- **Colectivos.** Este concepto no se utiliza en el modelo.
 
-\begin{algorithm}
-    \caption{\textit{Scheduling para el proceso principal del modelo}}
-    \label{alg:opinion_dynamics_cycle}
-    \begin{algorithmic}[1] % [1] para numeración de líneas
-        \STATE $A_i \leftarrow$ {SELECCIONAR\_AGENTE\_ALEATORIO}
-            \STATE $Vecinos \leftarrow$ {CONEXIONES \ $A_i$}
-                    \STATE $A_j \leftarrow$ {SELECCIONAR\_VECINO\_ALEATORIO}
-                    \STATE $\Delta O \leftarrow$ {SUBMODELO\_DE\_INFLUENCIA} \ {$O_i, O_j$}
-                    \COMMENT{Aplica regla Positiva, Acotada o Repulsiva}
-                    \STATE $O_i \leftarrow O_i + \Delta O_i$
-                    \STATE $O_j \leftarrow O_j + \Delta O_j$
-            \STATE {ACTUALIZAR\_OBSERVACIONES\_Y\_METRICAS}{}
-            \STATE $Tiempo \leftarrow Tiempo + 1$
-    \end{algorithmic}
-\end{algorithm}
+- **Observaciones.** Los agentes cambian su color de acuerdo a la opinión que tengan en ese momento, con valores entre -1 y 1. Aquellos con valores cercanos a -1 tomarán un color azul intenso, mientras que aquellos con valores cercanos a 1 tomarán colores rojos.También se tiene un histograma de las opiniones en todo el sistema, junto a una gráfica que muestra su evolución cada 10 pasos de tiempo. Para la visualización de las preferencias de voto se cuenta con dos gráficos, uno que indica el porcentaje de preferencia por A mientras que la segunda muestra las preferencias por B, siendo actualizadas cada paso de tiempo.
 
-\subsubsection{Conceptos de diseño}
-\begin{itemize}
-    \item \textbf{Principios básicos.} La suposición básica en todo modelo de dinámica de opinión es que la influencia social tiene un papel fundamental a a la hora de formar y modificar opiniones \citep{galesicIntegratingSocialCognitive2021}. En este caso se esta considerando que la influencia se da solamente entre aquellos agentes que comparten una conexión social cercana. Sumado a ello, cada tipo de influencia considerado tiene otras suposiciones sobre el cambio de opiniones, cada una con diferentes justificaciones en ciencias sociales y psicología \citep{flacheModelsSocialInfluence2017b}. 
+# Inicialización
 
-    \item \textbf{Emergencia.} Los patrones principales a buscar son la distribución de opiniones a escala global en el sistema. Se observa la emergencia de consenso, polarización o agrupación de opiniones. Estos patrones emergen de la interacción entre pares de los agentes del sistema.
+El modelo se inicializa asignando las opiniones iniciales a los agentes de acuerdo al parámetro *percent-option-B*, indicando el porcentaje de agentes con preferencia por la opción B. Para la comparación con las encuestas de opinión utilizadas, este parámetro debe tomar el valor de 39. Las opiniones iniciales para los agentes con preferencia por A se generan con una distribución uniforme con valores entre *[0,1]*, mientras que las opiniones para agentes con preferencia por B toman valores de una distribución uniforme entre *[-1,0]*. 
 
-    \item \textbf{Adaptación.} Los agentes adaptan su opinión después de interactuar con otros agentes presentes en sus conexiones sociales, de acuerdo a uno de los tipos de influencia considerados. Para una influencia positiva, el agente busca parecerse más a cualquier otra persona en su red social. En el caso de confianza acotada, busca solamente parecerse a aquellos similares a sí mismo. Para la influencia negativa, busca alejar su opinión de aquellas que sean muy disimilares.
+Posteriormente, se actualiza el color de los agentes de acuerdo a la opinión asignada, y se actualizan las preferencias de voto por la opción A y por la opción B.
 
-    \item \textbf{Objetivos.} Los tres modelos de influencia asumen que un agente busca ajustar su opinión de acuerdo a las interacciones con otros en sus conexiones sociales. Se difiere en qué agentes son considerados suficientemente importantes como para afectar la opinión, y el sentido en que lo hacen.
+# Datos de entrada
 
-    \item \textbf{Aprendizaje.} Este concepto no se utiliza en el modelo.
+El modelo no necesita del uso de datos de entrada.
 
-    \item \textbf{Predicción.} Este concepto no se utiliza en el modelo.
+# Submodelos
 
-    \item \textbf{Percepciones.} En la interacción entre agentes, se asume que uno es completamente consciente de la opinión del otro sobre el tema a discusión.
+## Influencia positiva
+ Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula 
 
-    \item \textbf{Interacciones.} La interacción a modelar es compartir opinión entre pares unidos por una conexión social, y cómo estas opiniones son modificadas de acuerdo al tipo de influencia considerado. Estas se dan de forma directa, donde la opinión de un agente afecta de la del otro de acuerdo al tipo de interacción. 
+```
+let x1-new (x1 + learning-rate * (x2 - x1))
+    let x2-new (x2 + learning-rate * (x1 - x2))
+    set opinion x1-new
+      ask other-patch [ set opinion x2-new] 
+```
 
-    \item \textbf{Estocásticidad.} Las opiniones iniciales de cada agente se dan de forma aleatoria, siguiendo una distribución uniforme. Los agentes a interactuar en cada paso de tiempo se seleccionan de manera aleatoria. 
+donde el parámetro *learning-rate* indica que tan rápido cambia la opinión de un     agente después de una interacción.
 
-    \item \textbf{Colectivos.} Este concepto no se utiliza en el modelo.
+## Confianza acotada
+Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula 
 
-    \item \textbf{Observaciones.} Se consideran tres diferentes  maneras de observar los cambios de opiniones en el sistema.
+```
+if (abs (x1 - x2) < confidence-threshold) [ 
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+```
+  El nuevo parámetro a considerar es *confidence-threshold*, indicando la tolerancia que tiene cada agente para opiniones disimilares. El parámetro *learning-rate* actúa de la misma forma que en el modelo de influencia positiva. De esta manera, un agente ajusta su opinión solamente si interactua con otro agente con una opinión lo suficientemente cercana a la que ya posee. En caso contrario, la opinión de ambos agentes en la interacción se mantiene igual.
 
-    La primera es el cambio de color en los agentes de acuerdo a la opinión que tengan en ese momento, con valores entre $-1$ y $1$. Aquellos con valores cercanos a $-1$ tomarán un color más oscuro, mientras que aquellos con valores cercanos a $1$ tomarán colores más claros.
+## Influencia negativa
+Para dos agentes i y j con opiniones x1, x2 respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
 
-    El segundo resultado a observar es un histograma de las opiniones en todo el sistema, donde se observan picos alrededor de aquellas opiniones compartidas por una gran cantidad de agentes. Si estos se presentan en los dos extremos es una señal de polarización, mientras que en el consenso se espera ver solamente uno. Para la agrupación, se observan diversos picos distribuidos sobre todo el espacio de valores para la opinión.
+```
+if (abs (x1 - x2) < confidence-threshold) [ 
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-patch [ set opinion x2-new]
+      ]
+      if (abs (x1 - x2) > confidence-threshold)[ 
+        ifelse (x1 > x2)
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 + x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+        [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 + x1) * .5)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 - x2) * .5)
+          set opinion x1-new
+          ask other-patch [ set opinion x2-new]
+        ]
+      ]
+```
 
-    La última salida a observar es una gráfica donde la opinión de cada agente en un momento dado se representa como un punto. El eje $X$ representa el tiempo o ticks, mientras que el eje $Y$ representa la opinión con valores entre $-1$ y $1$. Con suficiente tiempo se observa la convergencia de las opiniones a consenso, agrupación o polarización.
-\end{itemize}
+En este caso la interacción se ve dominada por el parámetro *confidence-threshold*. Si la diferencia de las opiniones es menor al valor de *confidence-threshold*, entonces ambos ajustan su opinión para ser más cercanas de acuerdo al valor del *learning-rate*. Sin embargo, si la diferencia entre opiniones es mayor a el valor de *confidence-threshold*, entonces ambos agentes alejan sus opiniones de acuerdo al valor del parámetro *learning-rate*.
 
-\subsubsection{Inicialización}
-El modelo se inicializa generando los agentes a utilizar en la simulación. A continuación se les asignan opiniones aleatorias a cada agente, tomando valores entre -1 y 1 siguiendo una distribución uniforme, algo estándar en el área \citep{galesicIntegratingSocialCognitive2021}. Por último se selecciona el tipo de influencia a modelar, que se mantendrá fijo durante toda la simulación.
 
-\subsubsection{Datos de entrada}
-El modelo propuesto no necesita del uso de datos de entrada.
+## Conversión de opinión a preferencia de voto
+Para convertir la opinión a preferencia de voto, se toma una opinión mayor a cero como la preferencia por el candidato A, y una opinión negativa como preferencia por el candidato B. De esta forma, para actualizar las preferencias globales de los agentes presentes en el modelo se tiene la siguiente fórmula.
 
-\subsubsection{Submodelos}
+```
+  set pref-A (count patches with [opinion > 0] )
+  set pref-B (count patches with [opinion < 0] )
+``` 
 
-\begin{itemize}
-    \item \textbf{Influencia positiva.} Para dos agentes $i$ y $j$ con opiniones $x_1, x_2$ respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
-    \begin{align*}
-        x_1 & \leftarrow x_1 + \gamma(x_2 - x_1) \\
-        x_2 & \leftarrow x_1 + \gamma(x_1 - x_2)
-    \end{align*}
-    donde $\gamma$ es un parámetro a ajustar en el modelo, indicando la fuerza de la influencia de otros agentes.
+El total de agentes con opinión mayor a cero se cuenta como el total de la población con la intención de votar por la opción A, mientra que el total de agentes con opinión menor a cero se cuenta como el número de agentes con la intención de votar por la opción B.
 
-    \item \textbf{Confianza acotada.} Para dos agentes $i$ y $j$ con opiniones $x_1, x_2$ respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
-    \begin{align*}
-        x_1 & \leftarrow x_1 + \gamma(x_2 - x_1) \text{ si } |x_1 - x_2|<d\\
-        x_2 & \leftarrow x_1 + \gamma(x_1 - x_2) \text{ si } |x_1 - x_2|<d.
-    \end{align*}
-    El nuevo parámetro a considerar es $d$ o cota de confianza, indicando la tolerancia que tiene cada agente para opiniones disimilares.
 
-    \item \textbf{Influencia negativa. }Para dos agentes $i$ y $j$ con opiniones $x_1, x_2$ respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
-    \begin{align*}
-        x_1 & \leftarrow 
-        \begin{cases} 
-        x_1 + \frac{\gamma}{2}(x_1 - x_2)(1-x_1), \text{ si } x_1 > x_2 \\
-        x_1 + \frac{\gamma}{2}(x_1 - x_2)(1+x_1), \text{ en caso contrario } 
-        \end{cases}
-        \\
-        x_2 & \leftarrow 
-        \begin{cases} 
-        x_2 + \frac{\gamma}{2}(x_2 - x_1)(1+x_2), \text{ si } x_1 > x_2 \\
-        x_2 + \frac{\gamma}{2}(x_2 - x_1)(1-x_2), \text{ en caso contrario } 
-        \end{cases}.
-    \end{align*}
-\end{itemize}\subsubsection{Entidades, variables de estado y escalas}
-Las entidades principales del modelo propuesto son los agentes, representando personas dentro de una sociedad, interactuando con aquellas personas con las que mantienen una conexión social. 
+## Referencias
 
-Cada agente se encuentra definido por una variable de estado: su opinión en un momento dado. Esta es un valor real en el rango $[-1,1]$, donde $-1$ indica una opinión completamente en contra y $1$ una opinión completamente a favor. Además de esto, es importante considerar los vecinos de un agente, que indican aquellos con los que se puede comunicar.
+Trabajo basado en los modelos de influencia positivam, negativa y acotada encontrados en:
 
-Se utiliza un mundo cerrado de tamaño 21x21, generando un agente por segmento. De esta forma, se tiene 441 agentes dentro del modelo. El tiempo se encuentra representado por ticks, sin un valor específico más allá del tiempo que se necesita para la interacción entre dos agentes. El modelo se ejecuta el número de ticks necesario hasta que se llegue a observar patrones emergentes a escala global. 
-
-\subsubsection{Descripción general y \textit{scheduling}}
-El programa tiene dos acciones principales por tick: la interacción entre agentes y la actualización de las observaciones del modelo.
-
-Para la interacción entre agentes, se selecciona a uno de manera aleatoria. Después de esto, se mira a los vecinos de este agente, y de manera aleatoria se selecciona a uno de ellos para compartir su opinión. Los dos agentes comparten su opinión de acuerdo al tipo de influencia que se este modelando siguiendo los submodelos detallados más adelante en el protocolo.
-
-El siguiente paso es la actualización de las observaciones del modelo, de forma que el cambio en las opiniones de los agentes se pueda analizar y visualizar. Igualmente esto se encuentra detallado en la sección de submodelos. En el algoritmo \ref{alg:opinion_dynamics_cycle} se encuentra la descripción de este proceso mediante pseudocódigo.
-
-\begin{algorithm}
-    \caption{\textit{Scheduling para el proceso principal del modelo}}
-    \label{alg:opinion_dynamics_cycle}
-    \begin{algorithmic}[1] % [1] para numeración de líneas
-        \STATE $A_i \leftarrow$ {SELECCIONAR\_AGENTE\_ALEATORIO}
-            \STATE $Vecinos \leftarrow$ {CONEXIONES \ $A_i$}
-                    \STATE $A_j \leftarrow$ {SELECCIONAR\_VECINO\_ALEATORIO}
-                    \STATE $\Delta O \leftarrow$ {SUBMODELO\_DE\_INFLUENCIA} \ {$O_i, O_j$}
-                    \COMMENT{Aplica regla Positiva, Acotada o Repulsiva}
-                    \STATE $O_i \leftarrow O_i + \Delta O_i$
-                    \STATE $O_j \leftarrow O_j + \Delta O_j$
-            \STATE {ACTUALIZAR\_OBSERVACIONES\_Y\_METRICAS}{}
-            \STATE $Tiempo \leftarrow Tiempo + 1$
-    \end{algorithmic}
-\end{algorithm}
-
-\subsubsection{Conceptos de diseño}
-\begin{itemize}
-    \item \textbf{Principios básicos.} La suposición básica en todo modelo de dinámica de opinión es que la influencia social tiene un papel fundamental a a la hora de formar y modificar opiniones \citep{galesicIntegratingSocialCognitive2021}. En este caso se esta considerando que la influencia se da solamente entre aquellos agentes que comparten una conexión social cercana. Sumado a ello, cada tipo de influencia considerado tiene otras suposiciones sobre el cambio de opiniones, cada una con diferentes justificaciones en ciencias sociales y psicología \citep{flacheModelsSocialInfluence2017b}. 
-
-    \item \textbf{Emergencia.} Los patrones principales a buscar son la distribución de opiniones a escala global en el sistema. Se observa la emergencia de consenso, polarización o agrupación de opiniones. Estos patrones emergen de la interacción entre pares de los agentes del sistema.
-
-    \item \textbf{Adaptación.} Los agentes adaptan su opinión después de interactuar con otros agentes presentes en sus conexiones sociales, de acuerdo a uno de los tipos de influencia considerados. Para una influencia positiva, el agente busca parecerse más a cualquier otra persona en su red social. En el caso de confianza acotada, busca solamente parecerse a aquellos similares a sí mismo. Para la influencia negativa, busca alejar su opinión de aquellas que sean muy disimilares.
-
-    \item \textbf{Objetivos.} Los tres modelos de influencia asumen que un agente busca ajustar su opinión de acuerdo a las interacciones con otros en sus conexiones sociales. Se difiere en qué agentes son considerados suficientemente importantes como para afectar la opinión, y el sentido en que lo hacen.
-
-    \item \textbf{Aprendizaje.} Este concepto no se utiliza en el modelo.
-
-    \item \textbf{Predicción.} Este concepto no se utiliza en el modelo.
-
-    \item \textbf{Percepciones.} En la interacción entre agentes, se asume que uno es completamente consciente de la opinión del otro sobre el tema a discusión.
-
-    \item \textbf{Interacciones.} La interacción a modelar es compartir opinión entre pares unidos por una conexión social, y cómo estas opiniones son modificadas de acuerdo al tipo de influencia considerado. Estas se dan de forma directa, donde la opinión de un agente afecta de la del otro de acuerdo al tipo de interacción. 
-
-    \item \textbf{Estocásticidad.} Las opiniones iniciales de cada agente se dan de forma aleatoria, siguiendo una distribución uniforme. Los agentes a interactuar en cada paso de tiempo se seleccionan de manera aleatoria. 
-
-    \item \textbf{Colectivos.} Este concepto no se utiliza en el modelo.
-
-    \item \textbf{Observaciones.} Se consideran tres diferentes  maneras de observar los cambios de opiniones en el sistema.
-
-    La primera es el cambio de color en los agentes de acuerdo a la opinión que tengan en ese momento, con valores entre $-1$ y $1$. Aquellos con valores cercanos a $-1$ tomarán un color más oscuro, mientras que aquellos con valores cercanos a $1$ tomarán colores más claros.
-
-    El segundo resultado a observar es un histograma de las opiniones en todo el sistema, donde se observan picos alrededor de aquellas opiniones compartidas por una gran cantidad de agentes. Si estos se presentan en los dos extremos es una señal de polarización, mientras que en el consenso se espera ver solamente uno. Para la agrupación, se observan diversos picos distribuidos sobre todo el espacio de valores para la opinión.
-
-    La última salida a observar es una gráfica donde la opinión de cada agente en un momento dado se representa como un punto. El eje $X$ representa el tiempo o ticks, mientras que el eje $Y$ representa la opinión con valores entre $-1$ y $1$. Con suficiente tiempo se observa la convergencia de las opiniones a consenso, agrupación o polarización.
-\end{itemize}
-
-\subsubsection{Inicialización}
-El modelo se inicializa generando los agentes a utilizar en la simulación. A continuación se les asignan opiniones aleatorias a cada agente, tomando valores entre -1 y 1 siguiendo una distribución uniforme, algo estándar en el área \citep{galesicIntegratingSocialCognitive2021}. Por último se selecciona el tipo de influencia a modelar, que se mantendrá fijo durante toda la simulación.
-
-\subsubsection{Datos de entrada}
-El modelo propuesto no necesita del uso de datos de entrada.
-
-\subsubsection{Submodelos}
-
-\begin{itemize}
-    \item \textbf{Influencia positiva.} Para dos agentes $i$ y $j$ con opiniones $x_1, x_2$ respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
-    \begin{align*}
-        x_1 & \leftarrow x_1 + \gamma(x_2 - x_1) \\
-        x_2 & \leftarrow x_1 + \gamma(x_1 - x_2)
-    \end{align*}
-    donde $\gamma$ es un parámetro a ajustar en el modelo, indicando la fuerza de la influencia de otros agentes.
-
-    \item \textbf{Confianza acotada.} Para dos agentes $i$ y $j$ con opiniones $x_1, x_2$ respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
-    \begin{align*}
-        x_1 & \leftarrow x_1 + \gamma(x_2 - x_1) \text{ si } |x_1 - x_2|<d\\
-        x_2 & \leftarrow x_1 + \gamma(x_1 - x_2) \text{ si } |x_1 - x_2|<d.
-    \end{align*}
-    El nuevo parámetro a considerar es $d$ o cota de confianza, indicando la tolerancia que tiene cada agente para opiniones disimilares.
-
-    \item \textbf{Influencia negativa. }Para dos agentes $i$ y $j$ con opiniones $x_1, x_2$ respectivamente, su opinión se modifica después de una interacción mediante la siguiente fórmula
-    \begin{align*}
-        x_1 & \leftarrow 
-        \begin{cases} 
-        x_1 + \frac{\gamma}{2}(x_1 - x_2)(1-x_1), \text{ si } x_1 > x_2 \\
-        x_1 + \frac{\gamma}{2}(x_1 - x_2)(1+x_1), \text{ en caso contrario } 
-        \end{cases}
-        \\
-        x_2 & \leftarrow 
-        \begin{cases} 
-        x_2 + \frac{\gamma}{2}(x_2 - x_1)(1+x_2), \text{ si } x_1 > x_2 \\
-        x_2 + \frac{\gamma}{2}(x_2 - x_1)(1-x_2), \text{ en caso contrario } 
-        \end{cases}.
-    \end{align*}
-\end{itemize}
+* Paul Smaldino. (2024). psmaldino/modsoc: Modeling Social Behavior (v1.0). Zenodo. https://doi.org/10.5281/zenodo.11245354
