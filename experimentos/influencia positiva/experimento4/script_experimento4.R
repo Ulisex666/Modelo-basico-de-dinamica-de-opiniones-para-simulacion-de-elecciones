@@ -64,4 +64,72 @@ error_experimento4 <- experimento4_avg %>%
   arrange(MSE)
 
 # Se muestran los mejores resultados
-head(error_experimento5)
+head(error_experimento4)
+
+ggplot(error_experimento4, aes(x=learning_rate, y = RMSE)) +
+  geom_point(color = "#2C3E50", size = 1) +
+  labs(
+    title = "Error de acuerdo al valor del parámetro
+    learning rate",
+    x = "Agentes interactuando por tick",
+    y = "Error Cuadrático Medio (RMSE %)"
+  ) +
+  theme_minimal(base_size = 12) 
+
+#### Mejor modelo ####
+# Se realizan 100 simulaciones del mejor modelo para graficar su evolución además de su variabilidad
+# Este modelo se obtiene con 5 agentes, learning rate de 0,58
+experimento4_mejor <- read.csv("experimento4-positiva-mejor-table.csv", skip=6)
+experimento4_mejor <- experimento4_mejor %>%
+  rename(
+    tick = X.step., 
+    run_number = X.run.number.,
+    pref_A = pref.A,
+    pref_B = pref.B,
+    agents_per_tick = agents.updated.per.tick,
+    learning_rate = learning.rate
+  )
+experimento4_mejor <- experimento4_mejor[c('run_number', 'tick', 'learning_rate', 'pref_A', 'pref_B')]
+experimento4_mejor_avg <- experimento4_mejor %>%
+  group_by(tick) %>%
+  
+  summarise(
+    mean_pref_A = mean(pref_A),
+    mean_pref_B = mean(pref_B),
+    min_pref_A = min(pref_A),
+    max_pref_A = max(pref_A),
+    min_pref_B = min(pref_B),
+    max_pref_B = max(pref_B),
+    .groups = 'drop' 
+  ) %>%
+  
+  mutate(
+    pct_A = (mean_pref_A / 1070) * 100,
+    pct_B = (mean_pref_B / 1070) * 100, 
+    pct_min_A = (min_pref_A / 1070) * 100,
+    pct_max_A = (max_pref_A / 1070) * 100,
+    
+    pct_B = (mean_pref_B / 1070) * 100,
+    pct_min_B = (min_pref_B / 1070) * 100,
+    pct_max_B = (max_pref_B / 1070) * 100
+  )
+
+
+
+ggplot(experimento4_mejor_avg, aes(x = tick)) +
+  geom_ribbon(aes(ymin = pct_min_A, ymax = pct_max_A), 
+              fill = "brown", alpha = 0.2) +
+  
+  geom_line(aes(y = pct_A), color = "brown4", size = 1) +
+  
+  geom_point(data = encuestas_reales, 
+             aes(x = tick, y = pct_A_real, shape = "Datos reales"), 
+             color = "red", size = 3, shape = 18) +
+  
+  theme_minimal() +
+  labs(
+    title = "Evolución de preferencia por A con learning rate = 0.58,
+    5 interacciones por dia",
+    x = "Ticks (Días)",
+    y = "Agentes con preferencia por A (%)"
+  )
