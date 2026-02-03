@@ -167,10 +167,10 @@ set-histogram-num-bars 40
       <choice type="string" value="BC"></choice>
       <choice type="string" value="negative"></choice>
     </chooser>
-    <slider x="14" step="0.1" y="273" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.5" variable="confidence-threshold"></slider>
+    <slider x="14" step="0.1" y="273" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="1.0" variable="confidence-threshold"></slider>
     <slider x="14" step="1" y="343" max="100" width="250" display="percent-option-B" height="50" min="0" direction="Horizontal" default="39.0" variable="percent-option-B"></slider>
-    <slider x="14" step="1" y="406" max="1070" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="1.0" variable="agents-updated-per-tick"></slider>
-    <slider x="57" step=".01" y="140" max="1" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.3" variable="learning-rate"></slider>
+    <slider x="14" step="1" y="406" max="1070" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="5.0" variable="agents-updated-per-tick"></slider>
+    <slider x="57" step=".01" y="140" max="1" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.42" variable="learning-rate"></slider>
     <switch x="69" y="91" height="40" on="false" variable="spatial-interactions?" width="141" display="spatial-interactions?"></switch>
   </widgets>
   <info><![CDATA[# Propósito y patrones
@@ -1245,6 +1245,112 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
         </enumeratedValueSet>
         <enumeratedValueSet variable="influence-type">
           <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-4-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0.5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-5-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.01" last="0.3"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="25"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0.5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento4-positiva-mejor" repetitions="100" sequentialRunOrder="true" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.58"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1.2"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-1-negativa" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>pref-A</metric>
+        <metric>pref-B</metric>
+      </metrics>
+      <constants>
+        <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
+        <enumeratedValueSet variable="percent-option-B">
+          <value value="39"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="5"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;negative&quot;"></value>
         </enumeratedValueSet>
       </constants>
     </experiment>
