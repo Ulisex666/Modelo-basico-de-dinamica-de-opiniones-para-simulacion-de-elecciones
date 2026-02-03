@@ -70,8 +70,8 @@ ggplot(error_experimento4, aes(x=learning_rate, y = RMSE)) +
   geom_point(color = "#2C3E50", size = 1) +
   labs(
     title = "Error de acuerdo al valor del parámetro
-    learning rate",
-    x = "Agentes interactuando por tick",
+    learning rate con 5 agentes interacuando por tick",
+    x = "Learning rate",
     y = "Error Cuadrático Medio (RMSE %)"
   ) +
   theme_minimal(base_size = 12) 
