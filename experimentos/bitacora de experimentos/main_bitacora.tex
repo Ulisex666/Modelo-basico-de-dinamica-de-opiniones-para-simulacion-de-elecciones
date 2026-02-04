@@ -219,7 +219,6 @@ Esto es de esperarse, dado que únicamente se actualiza la opinión de dos agent
 
 Para evaluar esto, se realiza un segundo experimento para explorar el efecto de diferentes valores del parámetro \textit{agents-updated-per-tick} en el desempeño del modelo.
 
-\clearpage
 
 \subsubsection{Experimento 2. Variación del parámetro \textit{agents-updated-per-tick}.}
 
@@ -565,11 +564,11 @@ El parámetro evaluado en este experimento controla la facilidad con la que se d
 		\hline
 		\textit{influence-type} & \textit{negative}  \\
 		\hline
-		\textit{confidence-threshold} & 1 \\
+		\textit{confidence-threshold} & Entre $[0, 2]$ con saltos de 0.1  \\
 		\hline
 		percent-option-B & 39 \\
 		\hline
-		\textit{agents-updated-per-tick} & Entre $[1, 100]$ con saltos de 1. \\
+		\textit{agents-updated-per-tick} & 8 \\
 		\hline
 		\textit{spatial-interactions?} & \textit{False} \\
 		\hline
@@ -650,6 +649,45 @@ Como en el resto de modelos considerados en el estudio, el parámetro \textit{le
 	\caption{Configuración para el primer experimento con confianza acotada.}
 \end{table}
 
+\subsubsection{Resultados}
+Se toma el promedio de las 30 repeticiones para cada combinación de parámetros como referencia para medir el error comparado con las observaciones reales. Este error se visualiza en la figura \ref{fig:bcexp1error}, con los mejores resultados listados en el cuadro \ref{label}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/BC_exp1_error}
+	\caption{Error para el modelo de confianza acotada de acuerdo al parámetro de learning rate. Como en el resto de los modelos, se observa que este se minimiza con valores alrededor de 0.5, con una variabilidad alta pero menor que el resto de modelos.}
+	\label{fig:bcexp1error}
+\end{figure}
+
+\begin{table}
+	\centering
+	\begin{tabular}{|r|r|r|}
+		\hline
+		\textit{learning rate} & MSE & RMSE\\
+		\hline
+		0.58 & 6.88 & 2.62\\
+		\hline
+		0.54 & 7.13 & 2.67\\
+		\hline
+		0.46 & 7.17 & 2.68\\
+		\hline
+		0.59 & 7.18 & 2.68\\
+		\hline
+		0.56 & 7.59 & 2.76\\
+		\hline
+	\end{tabular}
+\end{table}
+
+Tomando el mejor valor para el parámetro, se realizan 30 simulaciones con la configuración dada y se observa la evolución de las opiniones. A su vez, se compara con los datos reales de la encuesta y de los resultados de las elecciones. Esto se muestra en la figura \ref{fig:bcexp1best}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/BC_exp1_best}
+	\caption{Evolución de opiniones para el modelo de confianza acotada con los mejores patrones encontrados en este experimento.}
+	\label{fig:bcexp1best}
+\end{figure}
+
+Como en el resto de modelos, se observa un mejor desempeño con valores alrededor de 0.5 para este parámetro. Al igual que en el resto de modelos, se observa que no se logra reproducir el resultado final del voto, obteniendo una preferencia por la opción A menor que aquella observada en la realidad. Esto indica que para este modelo será necesario aumentar el número de agentes interactuando por día, lo cuál conlleva cambios al parámetro de \textit{agents per tick} y \textit{confidence threshold}. Se inicia evaluando cambios para el primero, manteniendo fijo el segundo. 
  % ----- Protocolo ODD para evaluar el modelo ----- 
 
 \include{odd_base_new.tex}
