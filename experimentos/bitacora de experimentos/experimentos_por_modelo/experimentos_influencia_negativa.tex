@@ -1,0 +1,219 @@
+% !TEX root = ../main_bitacora.tex
+
+\section{Experimentación con modelo de influencia negativa}
+
+Bajo la influencia negativa, los dos agentes involucrados en una interacción toman una opinión más extrema si la diferencia entre sus opiniones es mayor a un valor dado, definido en el modelo por el parámetro \textit{confidence threshold}. Dado que las opiniones en el modelo toman valores entre $[-1, 1]$, la diferencia máxima entre dos opiniones es $2$. Un valor menor a $1$ para \textit{confidence threshold} suele llevar a polarización, y un valor mayor para este parámetro suele llevar a consenso. 
+
+En los experimentos para este tipo de influencia se evalúa la interacción de este parámetro junto con los otros presentes en el modelo, ya estudiados en la sección anterior: número de agentes interactuando por tick, \textit{learning rate} y la interacción espacial.
+
+\subsection{Experimento 1. Valoración del efecto del parámetro \textit{learning rate.}}
+
+Se inicia valorando el efecto del parámetro \textit{learning rate} en las simulaciones. Este controla la velocidad con la que los agentes ajustan su opinión después de una interacción, siendo más rápida mientras mayor sea el valor. Para la configuración se elige un total de 5 agentes por tick, dado que se observó en los experimentos anteriores que un valor menor a este lleva a resultados pobres. Se toma un valor de \textit{confidence threshold} igual a 1, implicando que el efecto repulsivo de la influencia negativa se da en alrededor del 50\% de las interacciones observadas en el modelo. La configuración para todos los parámetros se lista en el cuadro \ref{tab:exp1_negativa_setup}. Como en el resto de experimentos, se realizan 30 repeticiones por cada combinación de parámetros mediante el uso de \textit{Behaviorspace} en NetLogo.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & Entre $[0, 1]$ con saltos de $0.01$ \\
+		\hline
+		\textit{influence-type} & \textit{negative}  \\
+		\hline
+		\textit{confidence-threshold} & 1 \\
+		\hline
+		percent-option-B & 39 \\
+		\hline
+		\textit{agents-updated-per-tick} & 5 \\
+		\hline
+		\textit{spatial-interactions?} & \textit{False} \\
+		\hline
+	\end{tabular}
+	\caption{Configuración para el primer experimento con influencia negativa.}
+	\label{tab:exp1_negativa_setup}
+\end{table}
+
+\subsubsection{Resultados}
+Se toma el promedio de las 30 repeticiones para cada combinación de parámetros como referencia, y se utiliza para medir el error comparado con los datos reales. El error para las 100 combinaciones de valores se gráfica en la figura \ref{fig:negativaexp1error}, y los 5 parámetros con mejores resultados se listan en el cuadro \ref{tab:negativa_exp1_resultados}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/negativa_exp1_error}
+	\caption{Gráfica del error para el modelo de influencia negativa variando el parámetro learning rate con la configuración indicada. Se observa una alta variabilidad, pero con una tendencia a la baja en valores alrededor de 0.5.}
+	\label{fig:negativaexp1error}
+\end{figure}
+
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|r|r|r|}
+		\hline
+		\textit{learning rate} & MSE & RMSE\\
+		\hline
+		0.42 & 7.78 & 2.79\\
+		\hline
+		0.59 & 8.06 & 2.84\\
+		\hline
+		0.48 & 8.26 & 2.87\\
+		\hline
+		0.50 & 8.49 & 2.91\\
+		\hline
+		0.43 & 8.78 & 2.96\\
+		\hline
+	\end{tabular}	
+	\caption{Valores para \textit{learning rate} con el menor error bajo la configuración estudiada.}
+	\label{tab:negativa_exp1_resultados}
+\end{table}
+
+Se realizan 30 simulaciones utilizando la combinación de parámetros con los mejores resultados, tomando un valor de 0.42 para \textit{learning rate}. La visualización del cambio de preferencia por la opción A se muestra en la figura \ref{fig:negativaexp1best}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/negativa_exp1_best}
+	\caption{Evolución de preferencias para 30 repeticiones de la mejor combinación de parámetros. Se observa una alta variabilidad, y un fallo al momento de acercarse a los resultados finales de la elección.}
+	\label{fig:negativaexp1best}
+\end{figure}
+
+En base a los resultados obtenidos, se observa un desempeño peor al obtenido con el mejor modelo de influencia positiva, sobre todo al momento de aproximar los resultados finales de la elección. Esto se debe a que se tiene una preferencia por A baja comparada con la observada en los datos reales, sobre todo al llegar a los resultados finales. Esto indica que puede necesitarse un mayor número de agentes interactuando por día, evaluándose en el próximo experimento.
+
+ Algo a destacar es que para el parámetro \textit{learning rate} el error se minimiza con valores alrededor de $0.5$, de manera similar al modelo de influencia positiva. Esto da pistas de que el valor óptimo para este parámetro no es afectado por el tipo de influencia simulado. Cabe mencionar que un valor alto indica un cambio de opinión rápido, lo que da indicios de una población susceptible. Sin embargo, de momento no se ha tenido en cuenta las características de cada agente para elegir con quién interactuar cada paso de tiempo.
+
+
+\subsection{Experimento 2. Efectos del parámetro \textit{agents updated per tick} en el modelo de influencia negativa}
+
+En la siguiente validación del modelo se explorar el efecto del número de agentes interactuando por tick. Para ello, se toma como referencia el valor de \textit{learning rate} con mejores resultados  en el experimento anterior bajo la misma configuración. Dado que en experimentos anteriores se ha comprobado que valores altos para el número de agentes interactuando llevan a una convergencia prematura, se limita a explorar los valores en el rango $[1, 100]$ con saltos de 1. Para cada valor se realizan 30 repeticiones. El listado completo de la configuración para este experimento se tiene en \ref{tab:exp2_negativa_setup}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & 0.42 \\
+		\hline
+		\textit{influence-type} & \textit{negative}  \\
+		\hline
+		\textit{confidence-threshold} & 1 \\
+		\hline
+		\textit{percent-option-B} & 39 \\
+		\hline
+		\textit{agents-updated-per-tick} & Entre $[1, 100]$ con saltos de 1. \\
+		\hline
+		\textit{spatial-interactions?} & \textit{False} \\
+		\hline
+	\end{tabular}
+	\caption{Configuración para el segundo experimento con influencia negativa.}
+	\label{tab:exp2_negativa_setup}
+\end{table}
+
+\subsubsection{Resultados}
+El desempeño del modelo se evalúa de acuerdo a las preferencias obtenidas en la simulación. Para ello, se toma el promedio de las 30 repeticiones por cada valor del parámetro estudiado y se compara con los datos reales de las encuestas. En la figura \ref{fig:negativaexp2error} se muestra el cambio del error con respecto al valor dado al parámetro \textit{agents updated per tick}. En el cuadro \ref{tab:negativa_exp2_error} se muestran los valores para el parámetro con  el mejor desempeño.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/negativa_exp2_error}
+	\caption{Error para el modelo de acuerdo a la variación del número de agentes interactuando por tick. Se observa el menor error con valores alrededor de 10, aumentando rápidamente para valores mayores.}
+	\label{fig:negativaexp2error}
+\end{figure}
+
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|r|r|r|}
+		\hline
+		\textit{agents per tick} & MSE & RMSE\\
+		\hline
+		8 & 4.62 & 2.15\\
+		\hline
+		7 & 5.32 & 2.31\\
+		\hline
+		9 & 6.83 & 2.61\\
+		\hline
+		6 & 6.98 & 2.64\\
+		\hline
+		10 & 7.83 & 2.80\\
+		\hline
+	\end{tabular}
+	\caption{Mejores resultados para el parámetro \textit{agents per tick}. Se observa que los mejores valores para el número de agentes interactuando por tick se dan entre 6 y 10, ligeramente mayores al modelo de influencia positiva.}
+	\label{tab:negativa_exp2_error}
+\end{table}
+
+Se realizan 30 simulaciones del modelo con la configuración inicial y el parámetro \textit{agents per tick} con valor igual a 8. Se compara la evolución de las preferencias en el modelo con los datos de la encuesta real, y el resultado se muestra en la figura \ref{fig:negativaexp2best}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/negativa_exp2_best}
+	\caption{Evolución de las opiniones para el mejor parámetro encontrado en el experimento. Se observa una aproximación con alta variabilidad y menos exactitud que en el modelo de influencia positiva.}
+	\label{fig:negativaexp2best}
+\end{figure}
+
+Se observa una mejora en los resultados con respecto al experimento anterior, con un mejor acercamiento a los resultados finales de la elección. Sin embargo, no se tienen un desempeño significativamente mejor que en el modelo de influencia positiva. Algo a destacar es que los mejores resultados en este modelo se dieron con un número de agentes ligeramente mayor que en la influencia positiva, indicando que se necesita un mayor número de interacciones para aproximar la evolución de opiniones observada en la realidad. 
+
+Esto se debe al efecto repulsivo controlado por el parámetro \textit{confidence threshold}. Si este toma un valor bajo, el efecto repulsivo sobre las opiniones será mayor, mientras que se reduce para valores más grandes. Dado que se observa una tendencia al consenso con respecto a la opción A, se espera obtener mejores resultados al aumentar el valor de este parámetro. Para explorar esto se realiza otro experimento.
+
+\subsection{Experimento 3. Efecto del parámetro \textit{confidence threshold} en el modelo de influencia negativa.}
+
+Para finalizar la evaluación del modelo de influencia negativa, se explora el efecto del parámetro \textit{confidence treshold} sobre la evolución de las preferencias. En base a los experimentos anteriores se identifico el mejor desempeño con 8 agentes seleccionados para interactuar en cada paso de tiempo, con un valor de \textit{learning rate} de 0.42. El primer parámetro indica el número de agentes cambiando de opinión en cada día, mientras que el segundo controla la velocidad del cambio de opinión. 
+
+El parámetro evaluado en este experimento controla la facilidad con la que se dispara el efecto repulsivo del modelo de influencia negativa. Mientras menor sea el valor de este parámetro aumenta la probabilidad del efecto negativo, con un valor de 1 teniendo una probabilidad de activarlo en el 50\% de las interacciones. Para valores mayores esta probabilidad disminuye, llegando a ser muy cercano a cero para un valor de 2. Este parámetro se explorará con valores entre $[0,2]$ con saltos de $0.1$, y 30 repeticiones para cada valor del parámetro. La configuración completa del experimento se muestra en \ref{tab:exp3_negativa_setup}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & 0.42 \\
+		\hline
+		\textit{influence-type} & \textit{negative}  \\
+		\hline
+		\textit{confidence-threshold} & Entre $[0, 2]$ con saltos de 0.1  \\
+		\hline
+		percent-option-B & 39 \\
+		\hline
+		\textit{agents-updated-per-tick} & 8 \\
+		\hline
+		\textit{spatial-interactions?} & \textit{False} \\
+		\hline
+	\end{tabular}
+	\caption{Configuración para el tercer experimento con influencia negativa.}
+	\label{tab:exp3_negativa_setup}
+\end{table}
+
+\subsubsection{Resultados.}
+
+Se toma el promedio de las 30 repeticiones para cada valor del parámetro como referencia para evaluar el error del modelo con respecto a los datos reales. En base a ello, en la figura \ref{fig:negativaexp3error} se muestra el error con respecto a cada uno de los 20 parámetros evaluados. Se observa cómo este disminuye al aumentar el valor, con un mínimo alrededor de 1, listándose los valores con el mejor desempeño en el cuadro \ref{tab:negativa_exp3_resultados}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/negativa_exp3_error}
+	\caption{Error para el modelo de influencia negativa de acuerdo al valor del parámetro confidence threshold. Se observa como este se minimiza con valores alrededor de 1, aumentando en los extremos.}
+	\label{fig:negativaexp3error}
+\end{figure}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|r|r|r|}
+		\hline
+		\textit{confidence threshold} & MSE & RMSE\\
+		\hline
+		1.0 & 5.07 & 2.25\\
+		\hline
+		0.9 & 5.97 & 2.44\\
+		\hline
+		1.1 & 6.61 & 2.57\\
+		\hline
+		1.2 & 6.68 & 2.59\\
+		\hline
+		1.3 & 9.98 & 3.16\\
+		\hline
+	\end{tabular}
+	\caption{Mejores resultados para la variación del parámetro \textit{confidence threshold} en el modelo de influencia negativa.}
+	\label{tab:negativa_exp3_resultados}
+\end{table}
+
+Se tiene que el error se minimizó para el parámetro con valor igual a 1, dando el mismo modelo que en el experimento anterior. Por lo tanto, se omite la visualización de la evolución de las opiniones. Con esto se concluye que el modelo presenta los mejores resultados al tener una posibilidad intermedia de activar el efecto repulsivo, aumentando el error al llegar a los extremos.
+
+Esto se observa en las simulaciones, con valores bajos llevando a una polarización temprana en las opiniones, lo que conlleva un aumento de votos para la opción B que no se corresponde con los observado en la realidad. Por otro lado, valores altos para el parámetro llevan a un consenso prematuro, de forma que la opción A domina resultados de la votación. El valor de 1 para este parámetro lleva a un punto intermedio entre ambos fenómenos.
+
+Con base a lo observado, el desempeño del modelo no es significativamente mejor al del confianza positiva, llegando a obtener valores ligeramente más altos para el error. Por tanto, queda explorar el modelo de confianza acotada como alternativa para la simulación de la elección.

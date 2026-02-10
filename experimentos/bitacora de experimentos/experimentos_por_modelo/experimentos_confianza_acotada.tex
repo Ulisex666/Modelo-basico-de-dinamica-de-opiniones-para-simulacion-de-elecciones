@@ -1,0 +1,221 @@
+% !TEX root = ../main_bitacora.tex
+
+
+\section{Experimentos con modelo de confianza acotada}
+El modelo de confianza acotada toma como supuesto principal que la opinión se ve afectada únicamente al interactuar con otras personas que tengan una opinión parecida a la propia. En caso contrario, no se altera la opinión de ninguno de los agentes. Esto se diferencia del modelo de influencia negativa, donde una opinión muy disimilar causa un efecto repulsivo en los agentes. En la literatura, el modelo de confianza acotada es conocido por llevar a la agrupación de opiniones, donde estas se concentran en diferentes grupos a lo largo del rango de valores para la opinión.
+
+En el modelo desarrollado se tiene el parámetro \textit{confidence threshold} guiando la diferencia de opiniones máxima antes de que no se logre influenciar al otro agente. De esta forma, un valor pequeño indica que un agente solo se verá afectado por opiniones cercanas, y conforme el valor de este parámetro aumenta los agentes se ven afectados por espectro más amplio de opiniones. Esto se puede utilizar para evaluar la influenciabilidad o "open mindness" de la población estudiada.
+
+Nuevamente se realizan experimentos para evaluar el efecto de los siguientes parámetros en la evolución de las preferencias: \textit{learning rate}, \textit{agents per tick} y \textit{confidence treshold}. Se toma en cuenta los resultados de los experimentos anteriores para guiar la búsqueda de parámetros.
+
+\subsection{Experimento 1. Efecto de \textit{learning rate} en el modelo de confianza acotada}
+
+Como en el resto de modelos considerados en el estudio, el parámetro \textit{learning rate} gobierna la velocidad con la que los agentes del modelo cambian su opinión después de una interacción. Este parámetro se evalúa para valores entre $[0, 1]$ con saltos de $0.01$.
+
+ Tomando en consideración los experimentos anteriores, se fija el número de agentes por tick en 5, considerando que en ambos modelos anteriores los mejores resultados se obtuvieron con valores cercanos a este número. El parámetro \textit{confidence treshold} se fija en 1, un punto intermedio entre los extremos, de forma equivalente a la experimentación con el modelo de influencia negativa. 
+ 
+ Se realizan 30 simulaciones por cada configuración de los parámetros, con los valores mostrados en el cuadro \ref{tab:exp1_BC_setup}.
+ 
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & Entre $[0, 1]$ con saltos de $0.01$ \\
+		\hline
+		\textit{influence-type} & \textit{BC}  \\
+		\hline
+		\textit{confidence-threshold} & 1 \\
+		\hline
+		percent-option-B & 39 \\
+		\hline
+		\textit{agents-updated-per-tick} & 5 \\
+		\hline
+		\textit{spatial-interactions?} & \textit{False} \\
+		\hline
+	\end{tabular}
+	\caption{Configuración para el primer experimento con confianza acotada.}
+	\label{tab:exp1_BC_setup}
+\end{table}
+
+\subsubsection{Resultados}
+Se toma el promedio de las 30 repeticiones para cada combinación de parámetros como referencia para medir el error comparado con las observaciones reales. Este error se visualiza en la figura \ref{fig:bcexp1error}, con los mejores resultados listados en el cuadro \ref{tab:BC_exp1_resultados}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/BC_exp1_error}
+	\caption{Error para el modelo de confianza acotada de acuerdo al parámetro de learning rate. Como en el resto de los modelos, se observa que este se minimiza con valores alrededor de 0.5, con una variabilidad alta pero menor que el resto de modelos.}
+	\label{fig:bcexp1error}
+\end{figure}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|r|r|r|}
+		\hline
+		\textit{learning rate} & MSE & RMSE\\
+		\hline
+		0.58 & 6.88 & 2.62\\
+		\hline
+		0.54 & 7.13 & 2.67\\
+		\hline
+		0.46 & 7.17 & 2.68\\
+		\hline
+		0.59 & 7.18 & 2.68\\
+		\hline
+		0.56 & 7.59 & 2.76\\
+		\hline
+	\end{tabular}
+	\caption{Cinco mejores valores para el parámetro \textit{learning rate} en base al error cuadrático medio. }
+	\label{tab:BC_exp1_resultados}
+\end{table}
+
+Tomando el mejor valor para el parámetro, se realizan 30 simulaciones con la configuración dada y se observa la evolución de las opiniones. A su vez, se compara con los datos reales de la encuesta y de los resultados de las elecciones. Esto se muestra en la figura \ref{fig:bcexp1best}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/BC_exp1_best}
+	\caption{Evolución de opiniones para el modelo de confianza acotada con los mejores patrones encontrados en este experimento.}
+	\label{fig:bcexp1best}
+\end{figure}
+
+Se observa una disminución del error parar el parámetro \textit{learning rate} con valores alrededor de $0.5$, de forma similar al resto de los tipos de influencia. De forma más específica, el error mínimo se obtuvo con el mismo valor que se encontró en la experimentación con el modelo de influencia positiva, \textit{learning rate} $= 0.5$. 
+
+En la evolución de las opiniones, se observa que se mantiene por debajo de los valores reales para el resultado de la votación y para las encuestas. Esto indica que para este modelo será necesario aumentar el número de agentes interactuando por día, lo cuál conlleva cambios al parámetro de \textit{agents per tick} y \textit{confidence threshold}. Se inicia evaluando cambios para el primero, manteniendo fijo el segundo. 
+
+\subsection{Experimento 2. Efectos del parámetro \textit{agents updated per tick} en el modelo de confianza acotada}
+
+En este experimento se valora el efecto del número de agentes interactuando por tick en el cambio de intención de voto del modelo. Para ello, el parámetro \textit{agents per tick} se validó para valores entre $[1, 50]$ con saltos de 1. Para el resto de parámetros, se tomó un \textit{learning rate} de $0.58$ dado que obtuvo los mejores resultados en el experimento anterior. El valor de \textit{confidence threshold} se mantiene fijo en $1$. El resto de la configuración se da en el cuadro \ref{tab:exp2_BC_setup}. Se realizan 30 repeticiones por cada combinación de valores mediante la herramienta \textit{Behaviorspace}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & $0.58$ \\
+		\hline
+		\textit{influence-type} & \textit{BC}  \\
+		\hline
+		\textit{confidence-threshold} & 1 \\
+		\hline
+		percent-option-B & 39 \\
+		\hline
+		\textit{agents-updated-per-tick} & Entre $[1,50]$ con saltos de 1 \\
+		\hline
+		\textit{spatial-interactions?} & \textit{False} \\
+		\hline
+	\end{tabular}
+	\caption{Configuración para el segundo experimento con confianza acotada.}
+	\label{tab:exp2_BC_setup}
+\end{table}
+
+\subsubsection{Resultados}
+
+Para evaluar el desempeño del modelo, se toma como referencia el promedio de las 30 repeticiones por cada configuración de parámetros y se utiliza como referencia para medir el error. En la figura \ref{fig:bcexp2error} se observa el cambio del error de acuerdo al valor del parámetro \textit{agents per tick}, y en el cuadro \ref{} se listan los mejores 5 valores encontrados para este parámetro.  
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/BC_exp2_error}
+	\caption{Error obtenido de acuerdo al parámetro agents per tick. Se observa un mínimo alrededor del valor de 7.}
+	\label{fig:bcexp2error}
+\end{figure}
+
+\begin{table}
+	\centering
+	\begin{tabular}{|r|r|r|}
+		\hline
+		\textit{agents per tick} & MSE & RMSE\\
+		\hline
+		7 & 5.01 & 2.24\\
+		\hline
+		8 & 5.06 & 2.25\\
+		\hline
+		6 & 5.45 & 2.33\\
+		\hline
+		5 & 7.14 & 2.67\\
+		\hline
+		9 & 7.69 & 2.77\\
+		\hline
+	\end{tabular}
+	\caption{Listado de los 5 mejores valores para el parámetro \textit{agents per tick} de acuerdo al error.}
+	\label{tab:BC_exp2_error}
+\end{table}
+
+Se evalúa la evolución de las opiniones para la configuración con los mejores resultados, esto es, \textit{learning rate} $= 0.58$ y \textit{agents per tick} $= 7$. Esto se muestra en la figura \ref{fig:bcexp2best}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/BC_exp2_best}
+	\caption{Evolución de las opiniones para el modelo con los mejores parámetros encontrados hasta el experimento actual.}
+	\label{fig:bcexp2best}
+\end{figure}
+
+Se observa una mejora con respecto a los resultados del modelo anterior, con una mejor aproximación de los resultados de la elección. Como con el resto de modelos, se observa una convergencia prematura por la opción A al aumentar el número de agentes interactuando, mostrando la sensibilidad del modelo a este parámetro.
+
+Otro factor que afecta en la velocidad de la convergencia es el \textit{confidence threshold}. Conforme aumenta este parámetro, los agentes se ven influidos por una mayor diversidad de opiniones, lo cuál podría ayudar a una convergencia más rápida por la opción A sin llegar a los extremos observados al aumentar el número de agentes. Esto se evalúa en el siguiente experimento.
+
+\subsection{Experimento 3. Efecto del parámetro \textit{confidence threshold} en el modelo con confianza acotada}
+
+Como último experimento para el modelo de confianza acotada, se evalúa el efecto del parámetro \textit{confidence threshold} en el desempeño del modelo para aproximar los datos reales. Conforme aumenta el valor de este parámetro, los agentes presentes en el modelo se ven afectados por opiniones más dispares. De esta forma, conforme aumenta el valor de este parámetro aumenta la posibilidad de cambio de opinión en cada interacción.
+
+Este parámetro fue evaluado para valores en el rango $[0.1, 2]$ con saltos de $0.1$ y 30 repeticiones por cada valor. El resto de valores para los parámetros se toma de los resultados obtenidos en la experimentación anterior, con \textit{learning rate} igual a $0.58$ y \textit{agents per tick} igual a 7. Esto se muestra en el cuadro \ref{tab:exp3_BC_setup}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Parámetro} & \textbf{Valor} \\
+		\hline
+		\textit{learning-rate} & $0.58$ \\
+		\hline
+		\textit{influence-type} & \textit{BC}  \\
+		\hline
+		\textit{confidence-threshold} & Entre $[0.1, 2]$ con saltos de $0.1$ \\
+		\hline
+		percent-option-B & 39 \\
+		\hline
+		\textit{agents-updated-per-tick} & 7 \\
+		\hline
+		\textit{spatial-interactions?} & \textit{False} \\
+		\hline
+	\end{tabular}
+	\caption{Configuración para el tercer experimento con confianza acotada.}
+	\label{tab:exp3_BC_setup}
+\end{table}
+
+\subsubsection{Resultados}
+
+Tomando como referencia el promedio de las 30 repeticiones para cada valor, se mide el error con respecto a los valores de referencia. Este se muestra en la figura \ref{fig:bcexp3error}, listando los mejores valores para este parámetro en el cuadro \ref{tab:BC_exp3_error}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/BC_exp3_error}
+	\caption{Error para el modelo con confianza acotada de acuerdo al parámetro confidence threshold.}
+	\label{fig:bcexp3error}
+\end{figure}
+
+\begin{table}
+	\centering
+	\begin{tabular}{|r|r|r|}
+		\hline
+		\textit{confidence threshold} & MSE & RMSE\\
+		\hline
+		1.0 & 5.03 & 2.24\\
+		\hline
+		1.2 & 5.18 & 2.28\\
+		\hline
+		0.9 & 5.47 & 2.34\\
+		\hline
+		1.1 & 5.68 & 2.38\\
+		\hline
+		1.3 & 5.96 & 2.44\\
+		\hline
+	\end{tabular}
+	\caption{Valores que minimizan el parámetro confidence threshold en el modelo de confianza acotada.}
+	\label{tab:BC_exp3_error}
+\end{table}
+
+Se observa que el mejor resultado se da con un valor de 1, obteniendo la misma configuración que en el modelo anterior. Por lo tanto, se omite la evaluación del cambio de opinión, dado que tendrá resultados muy similares a los obtenidos en \ref{fig:bcexp2best}.
+
+De forma similar al modelo de influencia negativa, se observan los mejores resultados con un valor intermedio que limita el efecto de la diferencia de opinión. Este modelo logró resultados similares a la influencia negativa, siendo superado por el modelo de influencia positiva. 
