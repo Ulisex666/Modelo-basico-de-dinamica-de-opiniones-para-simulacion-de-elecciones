@@ -17,7 +17,7 @@ experimento1_table <- experimento1_table %>%
     confidence_threshold = confidence.threshold
   )
 
-# Para este experimento se evalúa el efecto de confidence threshold en el modelo de
+# Para este experimento se evalúa el efecto de learning rate en el modelo de
 # BC. Seleccionamos las variables adecuadas para este análisis
 experimento1_table <- experimento1_table[c('run_number', 'tick', 'learning_rate' ,'pref_A', 'pref_B')]
 

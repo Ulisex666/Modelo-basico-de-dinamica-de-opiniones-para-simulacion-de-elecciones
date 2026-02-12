@@ -1,0 +1,305 @@
+\documentclass{beamer}
+\input{config/rc-slides-config.tex}
+\usepackage[english]{babel}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{natbib}
+\usepackage{caption}
+% \usepackage{mathtools}
+% \usepackage{algorithm}
+% \usepackage{algorithmic}
+%\usepackage{tabularx}
+%\usepackage{xltabular}  
+%\usepackage{booktabs} 
+\usepackage{xcolor}
+\usepackage{makecell}
+\usepackage{lipsum}
+\usepackage{tikz} 
+%\usepackage{minted}
+% \usepackage{setspace}
+\usepackage{hyperref}
+
+\title[First experiments]{Experiments with basic model for presidential elections simulation}
+\institute[UV]{\textbf{Instituto de Investigaciones en Inteligencia Artificial} \\ Universidad Veracruzana \\ \vspace{0.25cm} \emph{Campus Sur, Calle Paseo Lote II, Sección Segunda No 112, \\ Nuevo Xalapa, Xalapa, Ver., México 91097}  \\ 
+		\vspace{0.25cm}   
+	}
+\author[Ulises J. G.]{Ulises Jiménez Guerrero}
+\date[MIA 2026]{\today}
+
+\logo{
+\includegraphics[width=0.8cm]{figs/logo_UV.png} 
+}
+
+\usetheme{CambridgeUS}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Contents}
+\tableofcontents
+\end{frame}
+% --------------------------------------------------------------------- %
+\section{Objective}
+\begin{frame}{Objective}
+	\begin{itemize}
+		\item A series of experiments were carried over a basic model of political elections based on opinion dynamics. The goal was to evaluate the model's capability of reproducing the main patterns observed in a real election, and some secondary patterns according to the POM methodology.
+		
+		\item For this goal, the 2024 mexican presidential election was selected as a case study, and a series of opinion polls were used for the creation and evaluation of the model's performance. 
+	\end{itemize}
+\end{frame}
+
+\section{Materials and methods}
+
+\begin{frame}{GEA-ISA opinion polls}
+	\begin{itemize}
+		\item According to Mexican law, all opinion polls conducted during an election cycle must be publicly available. For these experiments, GEA-ISA polls were selected, reporting public opinion at three distinct time steps. Additionally, the official election results are included. The recorded voting intention is as follows:
+		
+	\end{itemize}
+	
+	\resizebox{\textwidth}{!}{
+	\begin{tabular}{|c|c|c|c|c|}
+		\hline
+		& Sept. 2023 & Nov. 2023 & March 2024 & Election June 2024 \\
+		\hline
+		Sheinbaum & 53\% & 52\% & 52\% & 59.4 \% \\
+		\hline
+		Xóchitl & 34\% & 30\% & 33\% & 27.9 \% \\
+		\hline
+		MC candidate & 7\% & 10\% & 4\% & 10.4\% \\
+		\hline
+		Others & 6\% & 8\% & 12\% & 2.3\% \\
+		\hline
+	\end{tabular}
+}
+\end{frame}
+
+\begin{frame}{Making the model simpler}
+	To use the most basic model, the data was readjusted to only consider the two main candidates. The simulations start with the first poll as time $t=0$, an each tick is considered a day until the election day. The adjusted data is as follows, with candidate A corresponding to Sheinbaum and candidate B corresponding to Xochitl.
+	\resizebox{\textwidth}{!}{
+		\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Date} & 
+		\textbf{Time (days)} & 
+		\textbf{Preference for A (\%)} & 
+		\textbf{Preference for B (\%)} 
+		\\
+		\hline
+		2023/09/16 &
+		0  &
+		61  & 
+		39
+		\\ 
+		\hline
+		2023/11/25 &
+		70  &
+		64  &
+		36
+		\\
+		\hline 
+		2024/03/01 &
+		167  &
+		61 &
+		39 \\
+		\hline 
+		2024/06/02 &
+		260  &
+		68 &
+		32 \\
+		\hline
+	\end{tabular}
+	}	
+\end{frame}
+
+\begin{frame}{Mesuring the error}
+	Using the initial conditions recorded at t=0, the model's accuracy is evaluated by comparing simulated results against observed data at days 70, 167, and 260. Performance is quantified using Mean Squared Error (MSE) and Root Mean Squared Error (RMSE)..
+	
+	\begin{equation*}
+		RMSE = \sqrt{\frac{1}{|T|} \sum_{t \in T} \frac{1}{2} \sum_{p \in \{A, B\}} (P_{t,p} - \hat{P}_{t,p})^2}
+	\end{equation*}
+	
+		\begin{itemize}
+		\item $T$: Set of days with available empirical data.
+		\item $P_{t,p}$: Observed preference share for $p$ at time $t$.
+		\item $\hat{P}_{t,p}$: Simulated preference share for $p$ at time $t$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Model's interface}
+	The model considers three different types of influence for the opinion dynamics: positive, negative and bounded confidence. The experiments were carried over for each influence type.
+	% TODO: \usepackage{graphicx} required
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/basic_model}
+		\label{fig:basicmodel}
+	\end{figure}
+\end{frame}
+
+\section{Experimentation}
+\begin{frame}{Experimental setup}
+	\begin{itemize}
+		\item For every influence type, the relevant parameters were evaluated independently, keeping a fix value for the others. Of note, \textit{percent-option-B} always stays fixed at 39, following the data at time 0.
+		\item For every value given to a parameter, 30 simulations were repeated and the mean value of \textit{pref-A} and \textit{pref-B} was taken as a reference for calculating the error.
+		\item After calculating the optimal values for the parameters of a given preference type, a final set of 30 simulations were carried over to evaluate the evolution of preferences in the optimal model.
+	\end{itemize}
+\end{frame}
+
+\subsection{Positive influence}
+\begin{frame}{Positive influence}
+	For the positive influence model, only the following parameters have an impact on the preference share:
+	\begin{itemize}
+		\item \textit{learning-rate}: How fast does an agent adjust their opinion after an interaction?
+		\item \textit{agents-updated-per-tick}: How many agents select a partner to interact with per tick (day)?
+		\item \textit{spatial-interacions?}: Does an agent interact only with their neighbors or with all agents in the model?
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Finding optimal parameters for positive influence}
+	\begin{enumerate}
+		\item \textbf{Optimal learning-rate}. Starting with \textit{agents-updated-per-tick} fixed at 1, the parameter \textit{learning-rate} was evaluated for values between $[0,1]$ with steps of size $0.01$. The optimal value was found at \textbf{$0.53$}, with a RMSE of $4.10$. 
+		
+		\item \textbf{Optimal agents-updated-per-tick}. Fixing the value of \textit{learning-rate} at $0.53$, the parameter \textit{agents-updated-per-tick} was evaluated for values in $[2, 1070]$ with steps of size $1$. The optimal value was found at \textbf{$5$}, with a RMSE of 2.15.
+		
+		\item \textbf{Reevaluating the optimal learning-rate}. Finally, a new search for an optimal \textit{learning-rate} was realized fixing \textit{agents-updated-per-tick} at 5. A new optimal value of $0.58$ was found, with a RMSE of $2.06$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Evolution of preference share for optimal positive influence model}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/positive_influence_best.png}
+		\label{fig:posexp3prefa}
+	\end{figure}
+\end{frame}
+
+\subsection{Negative influence}
+\begin{frame}{Negative influence}
+	For the negative influence model, the following parameters must be considered:
+	\begin{itemize}
+		\item \textit{learning-rate}: How fast does an agent adjust their opinion after an interaction?
+		\item \textit{agents-updated-per-tick}: How many agents select a partner to interact with per tick (day)?
+		\item \textit{spatial-interacions?}: Does an agent interact only with their neighbors or with all agents in the model?
+		\item \textit{confidence-threshold}: If the difference between the opinion of two agents is lower than this number, their opinions become more alike. Otherwise, their opinions grow farther apart.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Finding optimal parameters for negative influence}
+	\begin{enumerate}
+		\item \textbf{Optimal learning-rate.} Starting with \textit{agents-updated-per-tick} fixed at 5, and \textit{confidence-threshold} fixed at 1, the \textit{learning-rate} is evaluated for values between $[0,1]$ with step size of $0.01$. The optimal value was found at $0.42$ with a RSME of $2.79$.
+		
+		\item \textbf{Optimal agents-updated-per-tick.} Fixing the \textit{learning-rate} at $0.42$ and \textit{confidence-threshold} at 1, the parameter \textit{agents-updated-per-tick} is tested for values in $[1, 100]$ with steps of size 1. The best result was found with a value of 8 and a RSME of $2.15$.
+		
+		\item \textbf{Optimal confidence-threshold.} The parameters \textit{confidence-threshold} and \textit{agents-updated-per-tick} were fixed with values $0.42$ and $8$, respectively. For the parameter \textit{confidence-threshold}, values between $[0,2]$ were tried, with steps of size $0.1$. The best value was found at $1$, the same configuration as the last one. 
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Evolution of preference share for optimal negative influence model}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/negative_influence_best}
+		\caption{}
+		\label{fig:negativeinfluencebest}
+	\end{figure}
+\end{frame}
+
+\subsection{Bounded confidence}
+\begin{frame}{Bounded confidence}
+	For the bounded confidence model, the following parameters are considered.
+	\begin{itemize}
+		\item \textit{learning-rate}: How fast does an agent adjust their opinion after an interaction?
+		\item \textit{agents-updated-per-tick}: How many agents select a partner to interact with per tick (day)?
+		\item \textit{spatial-interacions?}: Does an agent interact only with their neighbors or with all agents in the model?
+		\item \textit{confidence-threshold}: If the difference between the opinion of two agents is lower than this number, their opinions become more alike. Otherwise, they don't interact.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Finding optimal parameters for bounded confidence}
+	\begin{enumerate}
+		\item \textbf{Optimal learning-rate.} Starting with \textit{agents-updated-per-tick} fixed at 5, and \textit{confidence-threshold} fixed at 1, the \textit{learning-rate} is evaluated for values between $[0,1]$ with step size of $0.01$. The optimal value was found at $0.58$ with a RSME of $2.62$.
+		
+		\item \textbf{Optimal agents-updated-per-tick.} Fixing the \textit{learning-rate} at $0.58$ and \textit{confidence-threshold} at 1, the parameter \textit{agents-updated-per-tick} is tested for values in $[1, 50]$ with steps of size 1. The best result was found with a value of 7 and a RSME of $2.24$.
+		
+		\item \textbf{Optimal confidence-threshold.} The parameters \textit{confidence-threshold} and \textit{agents-updated-per-tick} were fixed with values $0.58$ and $7$, respectively. For the parameter \textit{confidence-threshold}, values between $[0,2]$ were tried, with steps of size $0.1$. The best value was found at $1$, the same configuration as the last one. 
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Evolution of preference share for optimal bounded confidence model}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/BC_best}
+		\label{fig:bcbest}
+	\end{figure}
+\end{frame}
+
+\section{Results}
+
+\begin{frame}{Comparison of fine-tuned models}
+	
+	A comparison of the characteristics of the best models for each type of influence follows. The \textit{positive influence} model yielded the best results, with a RMSE of 2.06.
+	\resizebox{\textwidth}{!}{
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		& \textbf{Positive influence} & \textbf{Negative influence} & \textbf{Bounded confidence} \\
+		\hline
+		\textit{learning-rate} & 0.58 & 0.42 & 0.58 \\
+		\hline
+		\textit{agents-per-tick} & 5 & 8 & 7 \\
+		\hline
+		\textit{confidence-threshold} & - & 1 & 1 \\
+		\hline
+	\textit{	spatial-interacions?} & false & false & false \\
+		\hline
+		RMSE & \textbf{2.06} & \textbf{2.15} & \textbf{2.24} \\
+		\hline
+	\end{tabular}
+		}
+\end{frame}
+
+
+% Por si luego lo utilizo	
+%	 Their characteristics are as follows:
+%	
+%	    \begin{table}
+%		\centering
+%		\begin{tabular}{|c|c|}
+%			\hline
+%			\textbf{Instrument developer}  & GEA-ISA \\
+%			\hline
+%			\textbf{Number of waves}  & 3 \\
+%			\hline
+%			\textbf{Sample size}  & $n = 1070 $ \\
+%			\hline
+%			\textbf{Geographic scope} & National \\
+%			\hline
+%			\textbf{Confidence level} &  95 \% $\pm$ 3\% \\
+%			\hline
+%			\textbf{Demographic variables} &
+%			\makecell{Age, sex, locality, \\
+%				internet access, educational attainment, \\  employment, marital status, number of \\ dependents, political orientation (left/right, \\ conservative/liberal),  ethnicity, religion, income. }  \\
+%			\hline
+%		\end{tabular}
+%	\end{table}
+
+
+
+\section{Bibliography}
+\begin{frame}[allowframebreaks]{Bibliography}
+    \bibliographystyle{plain}
+    \bibliography{fuentes}
+\end{frame}
+\end{document}
+
+
+
+
+
+
+
