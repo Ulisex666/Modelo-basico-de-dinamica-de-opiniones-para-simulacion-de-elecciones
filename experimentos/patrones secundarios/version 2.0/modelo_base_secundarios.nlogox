@@ -35,8 +35,7 @@ to initial-characteristics
 ; Los datos se leen del archivo que ya se preparo para este objetivo
   file-open "initial_agent_data.txt" ; Se abre el archivo, ya preprocesado
   while [not file-at-end?]
-  [
-    let next-X file-read
+  [ let next-X file-read
     let next-Y file-read
     let next-age file-read
     let next-sex file-read
@@ -45,17 +44,25 @@ to initial-characteristics
     ask patch next-X next-Y [
       set age next-age
       set sex next-sex
-      set opinion next-opinion
+      (ifelse 
+        next-opinion = 1
+        [set opinion random-float -1]
+        next-opinion = 2
+        [set opinion random-float 1]
+        next-opinion = 0
+        [set opinion 2]
+      )
     ]
   ]
+  file-close ; Se cierra el archvio despues de leer los datos
 end
 
 
 to go
   ;; dos agentes se eligen de manera aleatoria para interactuar
-  ask n-of agents-updated-per-tick patches [
+  ask n-of agents-updated-per-tick (patches with [sex != 0]) [
     let x1 opinion 
-    let other-patch one-of other patches 
+    let other-patch one-of other (patches with [sex != 0])
     
     if spatial-interactions? 
       [set other-patch one-of neighbors4] 
@@ -123,8 +130,8 @@ end
 
 ;; Se agrega contador de agentes con preferencias por A y B, para reporte en los experimentos
 to update-preferences
-  set pref-A (count patches with [opinion > 0] )
-  set pref-B (count patches with [opinion < 0] )
+  set pref-A (count patches with [opinion > 0 and sex != 0] )
+  set pref-B (count patches with [opinion < 0 and sex != 0] )
 end]]></code>
   <widgets>
     <view x="269" wrappingAllowedX="false" y="14" frameRate="30.0" minPycor="-5" height="54" showTickCounter="true" patchSize="5.0" fontSize="10" wrappingAllowedY="false" width="539" tickCounterLabel="ticks" maxPycor="4" updateMode="0" maxPxcor="53" minPxcor="-53"></view>
@@ -136,7 +143,7 @@ end]]></code>
       <pen interval="1.0" mode="2" display="default" color="-14730904" legend="true">
         <setup></setup>
         <update>if ticks mod 10 = 0 [
-  ask patches [
+  ask patches with [sex != 0][
     plotxy ticks opinion
   ]
 ]</update>
@@ -169,16 +176,15 @@ set-histogram-num-bars 40
         <update>plot (pref-B / count patches) * 100</update>
       </pen>
     </plot>
-    <chooser x="14" y="201" height="60" variable="influence-type" current="1" width="250" display="influence-type">
+    <chooser x="14" y="201" height="60" variable="influence-type" current="0" width="250" display="influence-type">
       <choice type="string" value="positive"></choice>
       <choice type="string" value="BC"></choice>
       <choice type="string" value="negative"></choice>
     </chooser>
     <slider x="14" step="0.1" y="273" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="1.0" variable="confidence-threshold"></slider>
-    <slider x="14" step="1" y="343" max="100" width="250" display="percent-option-B" height="50" min="0" direction="Horizontal" default="39.0" variable="percent-option-B"></slider>
-    <slider x="14" step="1" y="406" max="1070" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="8.0" variable="agents-updated-per-tick"></slider>
-    <slider x="57" step=".01" y="140" max="1" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.58" variable="learning-rate"></slider>
+    <slider x="57" step=".01" y="140" max="1" width="164" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.56" variable="learning-rate"></slider>
     <switch x="69" y="91" height="40" on="false" variable="spatial-interactions?" width="141" display="spatial-interactions?"></switch>
+    <slider x="13" step="1" y="333" max="1070" width="250" display="agents-updated-per-tick" height="50" min="1" direction="Horizontal" default="7.0" variable="agents-updated-per-tick"></slider>
   </widgets>
   <info><![CDATA[# Propósito y patrones
 
@@ -1160,18 +1166,17 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
     <experiment name="experimento-1-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
       <setup>setup</setup>
       <go>go</go>
-      <runMetricsCondition>ticks = 1</runMetricsCondition>
       <metrics>
         <metric>pref-A</metric>
         <metric>pref-B</metric>
       </metrics>
       <constants>
         <steppedValueSet variable="learning-rate" first="0" step="0.01" last="1"></steppedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
         <enumeratedValueSet variable="agents-updated-per-tick">
           <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
         </enumeratedValueSet>
         <enumeratedValueSet variable="confidence-threshold">
           <value value="0"></value>
@@ -1181,24 +1186,23 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
         </enumeratedValueSet>
       </constants>
     </experiment>
-    <experiment name="experimento-2-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="false">
+    <experiment name="experimento-agents-positiva" repetitions="30" sequentialRunOrder="true" runMetricsEveryStep="true">
       <setup>setup</setup>
       <go>go</go>
-      <runMetricsCondition>(ticks = 69) or (ticks = 166) or (ticks = 259)</runMetricsCondition>
       <metrics>
         <metric>pref-A</metric>
         <metric>pref-B</metric>
       </metrics>
       <constants>
         <enumeratedValueSet variable="learning-rate">
-          <value value="0.53"></value>
+          <value value="0.56"></value>
         </enumeratedValueSet>
-        <enumeratedValueSet variable="percent-option-B">
-          <value value="39"></value>
-        </enumeratedValueSet>
-        <steppedValueSet variable="agents-updated-per-tick" first="2" step="1" last="1070"></steppedValueSet>
+        <steppedValueSet variable="agents-updated-per-tick" first="1" step="1" last="50"></steppedValueSet>
         <enumeratedValueSet variable="confidence-threshold">
           <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
         </enumeratedValueSet>
         <enumeratedValueSet variable="influence-type">
           <value value="&quot;positive&quot;"></value>
@@ -1488,6 +1492,34 @@ Trabajo basado en los modelos de influencia positivam, negativa y acotada encont
         </enumeratedValueSet>
         <enumeratedValueSet variable="influence-type">
           <value value="&quot;BC&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="experimento-patrones-edad" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric><![CDATA[count (patches with [sex = 1 and opinion > 0])]]></metric>
+        <metric><![CDATA[count (patches with [sex = 1 and opinion < 0])]]></metric>
+        <metric><![CDATA[count (patches with [sex = 2 and opinion > 0])]]></metric>
+        <metric><![CDATA[count (patches with [sex = 2 and opinion < 0])]]></metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="learning-rate">
+          <value value="0.56"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="agents-updated-per-tick">
+          <value value="7"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="1"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="spatial-interactions?">
+          <value value="false"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;positive&quot;"></value>
         </enumeratedValueSet>
       </constants>
     </experiment>
